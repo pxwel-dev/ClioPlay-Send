@@ -137,6 +137,44 @@ textarea:focus, input:focus { border-color: #55c7df; box-shadow: 0 0 0 3px rgba(
 .manual { margin-top: 15px; padding-top: 14px; border-top: 1px solid #222e3a; }
 .manual summary { cursor: pointer; color: var(--muted); font-size: 12px; font-weight: 700; }
 .coordinate-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 13px; }
+
+.action-card {
+  margin-top: 18px;
+}
+.action-label {
+  display: block;
+  margin: 0 2px 8px;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+}
+.action-switch {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.action-option {
+  min-height: 64px;
+  padding: 11px 12px;
+  border: 1px solid var(--line);
+  border-radius: 15px;
+  background: var(--panel);
+  color: var(--muted);
+  text-align: left;
+  cursor: pointer;
+}
+.action-option strong, .action-option small { display: block; }
+.action-option strong { color: var(--text); font-size: 14px; }
+.action-option small { margin-top: 4px; color: var(--muted); font-size: 11px; line-height: 1.3; }
+.action-option.selected {
+  border-color: rgba(88,214,238,.75);
+  background: rgba(88,214,238,.09);
+  box-shadow: 0 0 0 2px rgba(88,214,238,.05) inset;
+}
+.action-option.selected strong { color: var(--cyan); }
+
 .send-button {
   width: 100%;
   min-height: 76px;
@@ -170,6 +208,40 @@ textarea:focus, input:focus { border-color: #55c7df; box-shadow: 0 0 0 3px rgba(
 .send-button strong, .send-button small { display: block; }
 .send-button strong { font-size: 17px; }
 .send-button small { margin-top: 3px; color: rgba(255,255,255,.77); }
+
+.transfer-options {
+  margin: 13px 4px 0;
+  color: var(--muted);
+  font-size: 11px;
+}
+.transfer-options summary {
+  width: fit-content;
+  cursor: pointer;
+  user-select: none;
+  font-weight: 700;
+}
+.transfer-options label {
+  margin-top: 11px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+.transfer-options label span { font-weight: 700; }
+.transfer-options select {
+  min-width: 116px;
+  padding: 8px 30px 8px 10px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--panel);
+  color: var(--text);
+  font: inherit;
+}
+.transfer-options p {
+  margin: 8px 0 0;
+  color: #687686;
+  line-height: 1.4;
+}
 .music-note {
   margin: 11px 17px 0;
   text-align: center;
@@ -180,6 +252,7 @@ textarea:focus, input:focus { border-color: #55c7df; box-shadow: 0 0 0 3px rgba(
 footer { padding: 25px 3px 0; text-align: center; color: #4f5b69; font-size: 11px; }
 @media (max-width: 420px) {
   .coordinate-grid { grid-template-columns: 1fr; }
+  .action-switch { grid-template-columns: 1fr; }
   .intro { padding-top: 28px; }
 }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }

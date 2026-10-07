@@ -72,6 +72,20 @@
       </details>
     </section>
 
+    <section class="action-card" aria-labelledby="actionLabel">
+      <span id="actionLabel" class="action-label">Send as</span>
+      <div class="action-switch" role="group" aria-label="Destination action">
+        <button id="routeNewButton" class="action-option selected" type="button" aria-pressed="true">
+          <strong>Route as new</strong>
+          <small>Replace the current route</small>
+        </button>
+        <button id="addStopButton" class="action-option" type="button" aria-pressed="false">
+          <strong>Add as stop</strong>
+          <small>Add before the destination</small>
+        </button>
+      </div>
+    </section>
+
     <button id="sendButton" class="send-button" type="button" disabled>
       <span class="send-icon" aria-hidden="true">⇢</span>
       <span>
@@ -79,6 +93,22 @@
         <small id="sendSubtext">Choose a destination first</small>
       </span>
     </button>
+
+    <details class="transfer-options">
+      <summary>Transfer options</summary>
+      <label for="durationSelect">
+        <span>Send duration</span>
+        <select id="durationSelect">
+          <option value="1">1 second</option>
+          <option value="2">2 seconds</option>
+          <option value="3">3 seconds</option>
+          <option value="4" selected>4 seconds</option>
+          <option value="5">5 seconds</option>
+          <option value="8">8 seconds</option>
+        </select>
+      </label>
+      <p>Increase this if your car needs more time to switch to Bluetooth audio before receiving the destination.</p>
+    </details>
 
     <p class="music-note">Music will stop during the transfer and may need to be resumed from your phone afterwards.</p>
 

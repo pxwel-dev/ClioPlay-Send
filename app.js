@@ -14,17 +14,33 @@ const el = {
   lonInput: $("lonInput"),
   sendButton: $("sendButton"),
   sendSubtext: $("sendSubtext"),
+  routeNewButton: $("routeNewButton"),
+  addStopButton: $("addStopButton"),
+  durationSelect: $("durationSelect"),
   txAudio: $("txAudio"),
   installButton: $("installButton")
 };
 
-const TRANSMIT_SECONDS = 1;
 let deferredInstall = null;
 let audioObjectUrl = null;
 let parseTimer = null;
+let sendAction = "N";
 
 function mediaSupported() {
   return "mediaSession" in navigator && "MediaMetadata" in window;
+}
+
+function loadTransferDuration() {
+  const saved = Number(localStorage.getItem("clp-send-seconds") || "4");
+  const allowed = [1, 2, 3, 4, 5, 8];
+  const seconds = allowed.includes(saved) ? saved : 4;
+  el.durationSelect.value = String(seconds);
+  return seconds;
+}
+
+function transferDuration() {
+  const seconds = Number(el.durationSelect.value);
+  return [1, 2, 3, 4, 5, 8].includes(seconds) ? seconds : 4;
 }
 
 function setMessage(text, type = "") {
@@ -115,6 +131,15 @@ function makeSilentWav(seconds) {
   return new Blob([buffer], { type: "audio/wav" });
 }
 
+function setSendAction(action) {
+  sendAction = action === "S" ? "S" : "N";
+  const isNew = sendAction === "N";
+  el.routeNewButton.classList.toggle("selected", isNew);
+  el.addStopButton.classList.toggle("selected", !isNew);
+  el.routeNewButton.setAttribute("aria-pressed", String(isNew));
+  el.addStopButton.setAttribute("aria-pressed", String(!isNew));
+}
+
 function publishMetadata(packet) {
   navigator.mediaSession.metadata = new MediaMetadata({ title: packet.title, artist: packet.artist, album: packet.album });
   try { navigator.mediaSession.playbackState = "playing"; } catch { }
@@ -143,9 +168,9 @@ async function transmit() {
   const coords = currentCoords();
   if (!coords || !mediaSupported()) return;
 
-  const packet = buildPacket(coords.lat, coords.lon, el.nameInput.value.trim(), nextSequence());
+  const packet = buildPacket(coords.lat, coords.lon, el.nameInput.value.trim(), nextSequence(), sendAction);
   if (audioObjectUrl) URL.revokeObjectURL(audioObjectUrl);
-  audioObjectUrl = URL.createObjectURL(makeSilentWav(TRANSMIT_SECONDS));
+  audioObjectUrl = URL.createObjectURL(makeSilentWav(transferDuration()));
   el.txAudio.src = audioObjectUrl;
   el.txAudio.volume = 1;
 
@@ -171,6 +196,11 @@ el.txAudio.addEventListener("ended", () => {
   showSent();
 });
 el.sendButton.addEventListener("click", transmit);
+el.routeNewButton.addEventListener("click", () => setSendAction("N"));
+el.addStopButton.addEventListener("click", () => setSendAction("S"));
+el.durationSelect.addEventListener("change", () => {
+  localStorage.setItem("clp-send-seconds", String(transferDuration()));
+});
 el.destinationInput.addEventListener("input", scheduleParse);
 el.destinationInput.addEventListener("paste", () => setTimeout(parseInput, 0));
 el.nameInput.addEventListener("input", () => updateDestination(el.sourceReadout.textContent || "Destination"));
@@ -217,4 +247,6 @@ function consumeShareTarget() {
 
 if ("serviceWorker" in navigator) navigator.serviceWorker.register("./sw.js").catch(() => {});
 if (!mediaSupported()) setMessage("This browser does not support the media feature ClioPlay Send needs.", "error");
+loadTransferDuration();
+setSendAction("N");
 consumeShareTarget();

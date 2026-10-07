@@ -1,4 +1,4 @@
-const CACHE = "clioplay-send-cache";
+const CACHE = "clioplay-send-action-duration-cache";
 const ASSETS = [
   "./", "./index.html", "./styles.css", "./app.js", "./parser.js",
   "./manifest.webmanifest", "./icons/icon-192.png", "./icons/icon-512.png", "./icons/apple-touch-icon.png"

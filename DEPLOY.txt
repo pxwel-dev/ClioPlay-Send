@@ -1,0 +1,15 @@
+ClioPlay Send — CLP2 action-first sender
+=========================================
+
+Replace the files in your GitHub Pages repository with the contents of this folder.
+
+Changes:
+- Route as new / Add as stop is selected before sending.
+- Sender emits CLP2 packets understood by the matching Carminat build.
+- No confirmation is needed on the Carminat after a normal phone send.
+- Transfer options is collapsed by default.
+- Send duration defaults to 4 seconds and can be set to 1, 2, 3, 4, 5, or 8 seconds.
+- The selected duration is remembered on the phone.
+- Service-worker cache name has been bumped so the updated files replace the older sender.
+
+After GitHub Pages deploys, reload the page twice or fully close/reopen the installed PWA if the old UI remains cached.

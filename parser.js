@@ -215,11 +215,12 @@ function crc16Ccitt(text) {
   return crc & 0xffff;
 }
 
-export function buildPacket(lat, lon, name, sequence) {
+export function buildPacket(lat, lon, name, sequence, action = "N") {
   if (!validCoords(lat, lon)) throw new Error("Invalid coordinates");
+  const intent = action === "S" ? "S" : "N";
   const latE5 = Math.round(lat * 100000), lonE5 = Math.round(lon * 100000);
   const seqHex = (sequence & 0xffff).toString(16).toUpperCase().padStart(4, "0");
-  const body = `CLP1:${latE5}:${lonE5}:${seqHex}`;
+  const body = `CLP2:${intent}:${latE5}:${lonE5}:${seqHex}`;
   const crc = crc16Ccitt(body).toString(16).toUpperCase().padStart(4, "0");
   const title = `${body}:${crc}`;
   if (title.length > 48) throw new Error("Destination packet is too long");
