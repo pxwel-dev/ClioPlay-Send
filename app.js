@@ -1,4 +1,4 @@
-import { parseDestination, buildPacket, sanitiseAvrcpName, validCoords } from "./parser.js";
+import { parseDestination, buildPacket, sanitiseAvrcpName, validCoords } from "./parser.js?v=20261019";
 
 const $ = id => document.getElementById(id);
 const el = {
@@ -25,13 +25,22 @@ let deferredInstall = null;
 let audioObjectUrl = null;
 let parseTimer = null;
 let sendAction = "N";
+let sending = false;
+let sentTimer = null;
+
+function stored(key, fallback) {
+  try { return localStorage.getItem(key) ?? fallback; } catch { return fallback; }
+}
+function remember(key, value) {
+  try { localStorage.setItem(key, value); } catch { }
+}
 
 function mediaSupported() {
   return "mediaSession" in navigator && "MediaMetadata" in window;
 }
 
 function loadTransferDuration() {
-  const saved = Number(localStorage.getItem("clp-send-seconds") || "4");
+  const saved = Number(stored("clp-send-seconds", "4"));
   const allowed = [1, 2, 3, 4, 5, 8];
   const seconds = allowed.includes(saved) ? saved : 4;
   el.durationSelect.value = String(seconds);
@@ -49,14 +58,15 @@ function setMessage(text, type = "") {
 }
 
 function nextSequence() {
-  let n = Number(localStorage.getItem("clp-seq") || "0");
+  let n = Number(stored("clp-seq", "0"));
   n = (n + 1) & 0xffff;
   if (!n) n = 1;
-  localStorage.setItem("clp-seq", String(n));
+  remember("clp-seq", String(n));
   return n;
 }
 
 function currentCoords() {
+  if (!el.latInput.value.trim() || !el.lonInput.value.trim()) return null;
   const lat = Number(el.latInput.value), lon = Number(el.lonInput.value);
   return validCoords(lat, lon) ? { lat, lon } : null;
 }
@@ -75,15 +85,14 @@ function updateDestination(provider = "Destination") {
   el.previewName.textContent = name;
   el.previewCoords.textContent = `${coords.lat.toFixed(6)}, ${coords.lon.toFixed(6)}`;
   el.destinationCard.hidden = false;
-  el.sendButton.disabled = !mediaSupported();
-  el.sendSubtext.textContent = mediaSupported() ? "Ready to send" : "Browser not supported";
+  el.sendButton.disabled = sending || !mediaSupported();
+  if (!sending) el.sendSubtext.textContent = mediaSupported() ? "Ready to send" : "Browser not supported";
 }
 
 function applyParsed(result) {
   el.latInput.value = result.lat.toFixed(6);
   el.lonInput.value = result.lon.toFixed(6);
-  if (result.name) el.nameInput.value = result.name;
-  else if (!el.nameInput.value.trim()) el.nameInput.value = "Phone destination";
+  el.nameInput.value = result.name || "Phone destination";
 
   let note = `${result.provider} destination ready.`;
   if (result.confidence === "map-center") note = "This link points to the visible map centre. Check the coordinates before sending.";
@@ -107,7 +116,7 @@ function clearDestination() {
 function parseInput() {
   const result = parseDestination(el.destinationInput.value);
   if (!result.ok) {
-    if (el.destinationInput.value.trim()) clearDestination();
+    clearDestination();
     if (el.destinationInput.value.trim()) setMessage(result.error, "error");
     else setMessage("Paste a destination to begin.");
     return;
@@ -116,6 +125,7 @@ function parseInput() {
 }
 
 function scheduleParse() {
+  clearDestination();
   clearTimeout(parseTimer);
   parseTimer = setTimeout(parseInput, 180);
 }
@@ -154,19 +164,23 @@ function clearMediaSession() {
 
 function showSent() {
   el.sendButton.classList.add("sent");
-  el.sendButton.disabled = false;
-  el.sendButton.querySelector("strong").textContent = "Sent to ClioPlay";
-  el.sendSubtext.textContent = "Send again if needed";
-  setTimeout(() => {
+  el.sendButton.disabled = !currentCoords() || !mediaSupported();
+  el.sendButton.querySelector("strong").textContent = "Transfer finished";
+  el.sendSubtext.textContent = "Check the destination on ClioPlay";
+  clearTimeout(sentTimer);
+  sentTimer = setTimeout(() => {
     el.sendButton.classList.remove("sent");
     el.sendButton.querySelector("strong").textContent = "Send to ClioPlay";
-    el.sendSubtext.textContent = "Ready to send";
+    updateDestination(el.sourceReadout.textContent || "Destination");
   }, 2200);
 }
 
 async function transmit() {
   const coords = currentCoords();
-  if (!coords || !mediaSupported()) return;
+  if (sending || !coords || !mediaSupported()) return;
+  sending = true;
+  clearTimeout(sentTimer);
+  el.sendButton.classList.remove("sent");
 
   const packet = buildPacket(coords.lat, coords.lon, el.nameInput.value.trim(), nextSequence(), sendAction);
   if (audioObjectUrl) URL.revokeObjectURL(audioObjectUrl);
@@ -174,17 +188,18 @@ async function transmit() {
   el.txAudio.src = audioObjectUrl;
   el.txAudio.volume = 1;
 
-  publishMetadata(packet);
   el.sendButton.disabled = true;
   el.sendButton.querySelector("strong").textContent = "Sending…";
   el.sendSubtext.textContent = "Keep the phone connected";
 
   try {
+    publishMetadata(packet);
     await el.txAudio.play();
     publishMetadata(packet);
   } catch (error) {
+    sending = false;
     clearMediaSession();
-    el.sendButton.disabled = false;
+    el.sendButton.disabled = !currentCoords() || !mediaSupported();
     el.sendButton.querySelector("strong").textContent = "Send to ClioPlay";
     el.sendSubtext.textContent = "Try again";
     setMessage(`The browser could not start the Bluetooth media transfer: ${error?.message || error}`, "error");
@@ -192,6 +207,8 @@ async function transmit() {
 }
 
 el.txAudio.addEventListener("ended", () => {
+  if (!sending) return;
+  sending = false;
   clearMediaSession();
   showSent();
 });
@@ -199,7 +216,7 @@ el.sendButton.addEventListener("click", transmit);
 el.routeNewButton.addEventListener("click", () => setSendAction("N"));
 el.addStopButton.addEventListener("click", () => setSendAction("S"));
 el.durationSelect.addEventListener("change", () => {
-  localStorage.setItem("clp-send-seconds", String(transferDuration()));
+  remember("clp-send-seconds", String(transferDuration()));
 });
 el.destinationInput.addEventListener("input", scheduleParse);
 el.destinationInput.addEventListener("paste", () => setTimeout(parseInput, 0));

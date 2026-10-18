@@ -1,15 +1,20 @@
-ClioPlay Send — CLP2 action-first sender
-=========================================
+ClioPlay Send — Google Maps link update, 19 October 2026
+======================================================
 
-Replace the files in your GitHub Pages repository with the contents of this folder.
+Extract CLIOPLAY-SEND-2026-10-19.zip and replace the files in the sender's
+existing website/Pages directory with the extracted contents. Upload the whole
+set, especially index.html, app.js, parser.js and sw.js. No npm/build step.
 
-Changes:
-- Route as new / Add as stop is selected before sending.
-- Sender emits CLP2 packets understood by the matching Carminat build.
-- No confirmation is needed on the Carminat after a normal phone send.
-- Transfer options is collapsed by default.
-- Send duration defaults to 4 seconds and can be set to 1, 2, 3, 4, 5, or 8 seconds.
-- The selected duration is remembered on the phone.
-- Service-worker cache name has been bumped so the updated files replace the older sender.
+This update fixes apostrophes (Kareem's Grill), quoted/Markdown/encoded links,
+and repeated coordinate blocks. It selects a business's actual pin before
+camera coordinates. Truly ambiguous or coordinate-free links explain how to
+obtain a usable full URL.
 
-After GitHub Pages deploys, reload the page twice or fully close/reopen the installed PWA if the old UI remains cached.
+The service-worker cache and JavaScript module URLs have new versions. After
+the host finishes deploying, reload the page; close and reopen an installed
+PWA if it still shows the old behaviour. The full Kareem's Grill example should
+show 54.975479, -1.640502 and the name Kareem's Grill, ready to send.
+
+No SD-card executable or navigation files need changing for this sender update.
+The transfer duration still defaults to 4 seconds. The protocol has no receipt
+acknowledgement: confirm the destination appears on the head unit.

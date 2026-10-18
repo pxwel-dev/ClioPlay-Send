@@ -11,7 +11,7 @@ function safeDecode(value) {
 
 function tidyName(value) {
   return safeDecode(value || "")
-    .replace(/[_+]/g, " ")
+    .replace(/_/g, " ")
     .replace(/\s+/g, " ")
     .replace(/^[-–—\s]+|[-–—\s]+$/g, "")
     .trim();
@@ -30,10 +30,30 @@ function parsePair(value) {
 }
 
 function extractUrl(text) {
+  text = text.replace(/&(?:amp|#0*38|#x0*26);/gi, "&")
+    .replace(/&(?:apos|#0*39|#x0*27);/gi, "'");
+  // Shared links can contain an encoded whole URL, rather than encoded URL parts.
+  for (let i = 0; i < 2 && !/https?:\/\//i.test(text) && /https?%(?:25)*3a/i.test(text); i++) {
+    text = safeDecode(text);
+  }
   const geo = text.match(/geo:-?\d+(?:\.\d+)?,-?\d+(?:\.\d+)?[^\s]*/i);
-  if (geo) return geo[0].replace(/[),.;]+$/, "");
-  const match = text.match(/https?:\/\/[^\s<>"']+/i);
-  return match ? match[0].replace(/[),.;]+$/, "") : "";
+  if (geo) return geo[0].replace(/[.;]+$/, "");
+  // Apostrophes are valid URL characters: cutting at Kareem's loses the pin.
+  // Prefer a Markdown link target over its label, which may itself be a URL.
+  const markdown = text.match(/\]\(\s*<?(?=https?:\/\/)/i);
+  const start = markdown ? markdown.index + markdown[0].length : 0;
+  const match = text.slice(start).match(/https?:\/\/[^\s<>"\[\]]+/i);
+  if (!match) return "";
+  let url = match[0];
+  const opening = text[start + match.index - 1];
+  const closing = { "'": "'", "“": "”", "‘": "’" }[opening];
+  if (closing && url.endsWith(closing)) url = url.slice(0, -1);
+  url = url.replace(/[.,;]+$/, "");
+  // Remove wrapping punctuation without damaging parentheses within place names.
+  while (url.endsWith(")") && (url.match(/\)/g) || []).length > (url.match(/\(/g) || []).length) {
+    url = url.slice(0, -1).replace(/[.,;]+$/, "");
+  }
+  return url;
 }
 
 function sharedName(text, url) {
@@ -65,27 +85,51 @@ function isShortLink(url) {
 function geoParse(uri) {
   const m = uri.match(/^geo:(-?\d+(?:\.\d+)?),(-?\d+(?:\.\d+)?)(?:\?q=([^&]+))?/i);
   if (!m) return null;
-  const lat = Number(m[1]), lon = Number(m[2]);
-  if (!validCoords(lat, lon)) return null;
+  let lat = Number(m[1]), lon = Number(m[2]);
   let name = "";
   if (m[3]) {
-    const labelled = safeDecode(m[3]).match(/^-?\d+(?:\.\d+)?,-?\d+(?:\.\d+)?\s*\((.+)\)$/);
-    if (labelled) name = tidyName(labelled[1]);
+    const query = safeDecode(m[3]);
+    const labelled = query.match(/^(-?\d+(?:\.\d+)?),(-?\d+(?:\.\d+)?)(?:\s*\((.+)\))?$/);
+    if (labelled) {
+      lat = Number(labelled[1]); lon = Number(labelled[2]);
+      name = tidyName(labelled[3] || "");
+    } else if (lat === 0 && lon === 0) return null;
   }
+  if (!validCoords(lat, lon)) return null;
   return { lat, lon, name, confidence: "exact" };
 }
 
 function googleParse(u) {
   let coords = null, name = "", confidence = "exact";
-  const data = u.href.match(/!3d(-?\d+(?:\.\d+)?)!4d(-?\d+(?:\.\d+)?)/);
-  if (data) coords = toCoords(data);
-  for (const key of ["destination", "query", "daddr", "ll", "q", "center"]) {
+  function coordinateQuery(value) {
+    // A street address such as "50,52 Crossley Terrace" is not a coordinate pair.
+    const match = safeDecode(value || "").trim().match(/^(?:loc:)?\s*(-?\d{1,3}(?:\.\d+)?)\s*[,;\s]\s*(-?\d{1,3}(?:\.\d+)?)(?:\s*\([^)]*\))?\s*$/i);
+    return toCoords(match);
+  }
+  for (const key of ["destination", "query", "daddr", "q"]) {
     if (coords) break;
-    coords = parsePair(u.searchParams.get(key));
-    if (coords && key === "center") confidence = "map-center";
+    coords = coordinateQuery(u.searchParams.get(key));
   }
   if (!coords) {
-    const at = safeDecode(u.href).match(/@(-?\d+(?:\.\d+)?),(-?\d+(?:\.\d+)?)(?:,|\/|$)/);
+    const data = safeDecode(u.pathname + " " + (u.searchParams.get("data") || ""));
+    const pairs = [...data.matchAll(/!3d(-?\d+(?:\.\d+)?)!4d(-?\d+(?:\.\d+)?)(?=!|\/|\s|$)/g)];
+    const unique = new Map();
+    for (const pair of pairs) {
+      const point = toCoords(pair);
+      if (!point) return null;
+      unique.set(`${point.lat},${point.lon}`, point);
+    }
+    if (unique.size === 1) coords = unique.values().next().value;
+    else if (unique.size > 1) return { error: "This Google Maps link contains more than one location. Open the destination's own place page and copy that full URL." };
+  }
+  if (!coords) {
+    for (const key of ["ll", "center"]) {
+      coords = coordinateQuery(u.searchParams.get(key));
+      if (coords) { confidence = "map-center"; break; }
+    }
+  }
+  if (!coords) {
+    const at = safeDecode(u.pathname).match(/@(-?\d+(?:\.\d+)?),(-?\d+(?:\.\d+)?)(?:,|\/|$)/);
     if (at) { coords = toCoords(at); confidence = "map-center"; }
   }
   const place = u.pathname.match(/\/place\/([^/]+)/i);
@@ -125,12 +169,12 @@ function osmParse(u) {
   const mlat = u.searchParams.get("mlat"), mlon = u.searchParams.get("mlon");
   if (mlat !== null && mlon !== null) {
     const lat = Number(mlat), lon = Number(mlon);
-    if (validCoords(lat, lon)) return { lat, lon, name: "", confidence: "exact" };
+    if (mlat.trim() && mlon.trim() && validCoords(lat, lon)) return { lat, lon, name: "", confidence: "exact" };
   }
   const latText = u.searchParams.get("lat"), lonText = u.searchParams.get("lon");
   if (latText !== null && lonText !== null) {
     const lat = Number(latText), lon = Number(lonText);
-    if (validCoords(lat, lon)) return { lat, lon, name: "", confidence: "exact" };
+    if (latText.trim() && lonText.trim() && validCoords(lat, lon)) return { lat, lon, name: "", confidence: "exact" };
   }
   const hash = safeDecode(u.hash).match(/#map=\d+(?:\.\d+)?\/(-?\d+(?:\.\d+)?)\/(-?\d+(?:\.\d+)?)/i);
   if (hash) {
@@ -189,7 +233,10 @@ export function parseDestination(input) {
   else if (source === "OpenStreetMap") parsed = osmParse(u);
   else parsed = genericParse(u);
 
-  if (!parsed) return { ok: false, provider: source, error: `This ${source} link does not expose coordinates.` };
+  if (parsed?.error) return { ok: false, provider: source, error: parsed.error };
+  if (!parsed) return { ok: false, provider: source, error: source === "Google Maps"
+    ? "This Google Maps link does not expose usable coordinates. Open it in Google Maps, select the destination, then copy the full URL from the address bar."
+    : `This ${source} link does not expose coordinates.` };
   return { ok: true, ...parsed, name: parsed.name || sharedName(raw, urlText), provider: source };
 }
 

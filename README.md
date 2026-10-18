@@ -1,26 +1,60 @@
 # ClioPlay Send
 
-A small web app for sending a destination from your phone to ClioPlay over Bluetooth.
+A static phone web app that sends a destination to CLIOPLAY through Bluetooth
+media metadata. No server, API key, account or Node build is required.
 
 ## Use
 
-1. Connect your phone to ClioPlay Bluetooth.
-2. Open ClioPlay Send.
-3. Paste a full Google Maps, Apple Maps, Waze or OpenStreetMap link, or paste coordinates directly.
-4. Check the detected destination and choose **Route as new** or **Add as stop**.
-5. Tap **Send to ClioPlay**.
+1. Connect your phone to CLIOPLAY Bluetooth and open this app.
+2. Paste full Google Maps, Apple Maps, Waze or OpenStreetMap destination links,
+   or enter latitude and longitude. Check the detected destination.
+3. Choose **Route as new** or **Add as stop**, then **Send to ClioPlay**.
 
-The transfer takes one second. Music will stop during the transfer and may need to be resumed manually afterwards.
+For short links, first open them in your browser and copy the expanded URL.
+Links that identify only a map view or several possible coordinates need an
+explicit destination. The app does not resolve short links over a server.
 
-If a map app gives you a shortened link, open that link in your browser first and then copy the full URL from the address bar into ClioPlay Send.
+The Bluetooth media window defaults to **4 seconds**. Transfer options allow
+1, 2, 3, 4, 5 or 8 seconds and remember your selection when browser storage is
+available. Music pauses during transmission and may need to be resumed.
+The phone's success message reports completion of the send window; the protocol
+has no head-unit acknowledgement. Check the destination on the head unit.
 
-## GitHub Pages
+## Host
 
-Place these files at the root of a GitHub repository, then enable **Settings → Pages → Deploy from a branch** and publish the repository root.
+Serve the contents of this folder over HTTPS, or localhost for development.
+Do not open `index.html` through a `file:` URL. For a local preview:
 
-The site is fully static and requires no server or API.
+```sh
+python3 -m http.server 8000
+```
 
+Run that command from this folder, then open http://localhost:8000.
+For GitHub Pages, publish this folder as the site's artifact, or copy its
+contents to the root of a separate Pages repository and enable Pages there.
+All asset paths are relative, so it also works under a repository subpath.
+The service worker caches only this app's assets. After updating an installed
+PWA, close and reopen it if the previous version remains visible.
 
-## Transfer timing
+Pair this sender with the bundled CLP2-capable head-unit executable. Browser
+media-session support and the phone's Bluetooth metadata behaviour affect
+transfer reliability; duration is adjustable for this reason.
 
-The sender defaults to a 4 second Bluetooth media window. A compact **Transfer options** section lets the user choose 1, 2, 3, 4, 5, or 8 seconds; the selection is remembered on that device. Longer durations help when the head unit needs time to switch to Bluetooth audio before its AVRCP metadata poll sees the destination packet.
+## Google Maps business links — 19 October 2026
+
+Apostrophes in names such as **Kareem's Grill** no longer truncate URLs.
+Quoted, Markdown-wrapped and fully encoded URLs are accepted. Business pin
+coordinates take priority over camera positions, and repeated copies of the
+same coordinate pair are allowed. Truly different locations in one link are
+reported as ambiguous. Links with only place identifiers or addresses still
+need expanding in Google Maps; no geocoding service is used.
+
+See `CHANGELOG.md` and `DEPLOY.txt` for the update and deployment instructions.
+For the optional developer tests, use Node.js 18 or newer:
+
+```sh
+node --test tests/parser.test.mjs
+```
+
+The test fixtures contain actual Newcastle business URLs with provenance;
+other encoding/wrapping cases are generated variants, not additional live lookups.
