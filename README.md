@@ -53,3 +53,7 @@ reported as ambiguous. Links with only place identifiers or addresses still
 need expanding in Google Maps; no geocoding service is used.
 
 See `CHANGELOG.md` for further information.
+
+## Authorship
+
+ClioPlay Send was created and is maintained by [Pawel (pxwel-dev)](https://github.com/pxwel-dev) as a companion application to [ClioPlay](https://github.com/pxwel-dev/ClioPlay).
