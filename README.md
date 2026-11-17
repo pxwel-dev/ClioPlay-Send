@@ -52,12 +52,4 @@ same coordinate pair are allowed. Truly different locations in one link are
 reported as ambiguous. Links with only place identifiers or addresses still
 need expanding in Google Maps; no geocoding service is used.
 
-See `CHANGELOG.md` and `DEPLOY.txt` for the update and deployment instructions.
-For the optional developer tests, use Node.js 18 or newer:
-
-```sh
-node --test tests/parser.test.mjs
-```
-
-The test fixtures contain actual Newcastle business URLs with provenance;
-other encoding/wrapping cases are generated variants, not additional live lookups.
+See `CHANGELOG.md` for further information.
