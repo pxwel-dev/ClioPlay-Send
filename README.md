@@ -1,7 +1,10 @@
-# ClioPlay Send
+<h1 align="center">ClioPlay Send</h1>
+<p align="center">A static phone web app that sends a destination to CLIOPLAY through Bluetooth
+media metadata.</p>
+<p align="center">
+  Created and maintained by <a href="https://github.com/pxwel-dev">Pawel (pxwel-dev)</a>.
+</p>
 
-A static phone web app that sends a destination to CLIOPLAY through Bluetooth
-media metadata. No server, API key, account or Node build is required.
 
 ## Use
 
