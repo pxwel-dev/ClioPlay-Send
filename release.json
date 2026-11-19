@@ -1,0 +1,13 @@
+{
+  "version": "2.2.0",
+  "title": "Smarter navigation. Easier updates.",
+  "features": [
+    "Intelligent destination suggestions based on optional offline driving history.",
+    "Favourite suggestions for frequently visited places.",
+    "Historical traffic estimates, adjusted ETAs and smarter diversions (not live traffic).",
+    "Redesigned Settings menu and improved Bluetooth device identification.",
+    "Software-only updates without rebuilding compatible maps."
+  ],
+  "releaseUrl": "https://github.com/pxwel-dev/ClioPlay/releases/tag/v.2.2.0",
+  "updateUrl": "https://github.com/pxwel-dev/ClioPlay/blob/main/src/docs/updating.md"
+}

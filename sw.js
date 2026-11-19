@@ -1,7 +1,8 @@
-const CACHE = "clioplay-send-maps-links-20261019";
+const CACHE = "clioplay-send-release-notice-20261119";
 const OWNED_PREFIX = "clioplay-send-";
 const ASSETS = [
   "./", "./index.html", "./styles.css", "./app.js", "./parser.js",
+  "./release-notice.js", "./release.json",
   "./manifest.webmanifest", "./icons/icon-192.png", "./icons/icon-512.png", "./icons/apple-touch-icon.png"
 ];
 
@@ -22,9 +23,11 @@ self.addEventListener("fetch", event => {
   const asset = ASSETS.some(path => new URL(path, self.registration.scope).pathname === url.pathname);
   if (!asset) return;
   const key = new Request(url.origin + url.pathname);
+  const releaseMetadata = url.pathname === new URL("./release.json", self.registration.scope).pathname;
   event.respondWith(
     fetch(event.request)
       .then(response => {
+        if (releaseMetadata && !response.ok) throw new Error("Release metadata unavailable");
         if (response.ok) {
           const copy = response.clone();
           event.waitUntil(caches.open(CACHE).then(cache => cache.put(key, copy)));
