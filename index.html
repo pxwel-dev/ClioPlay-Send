@@ -28,8 +28,35 @@
       <button id="installButton" class="quiet-button" type="button" hidden>Install</button>
     </header>
 
+    <section id="releaseNotice" class="release-notice" aria-label="ClioPlay release announcement" hidden>
+      <div class="release-row">
+        <button id="releaseToggle" class="release-toggle" type="button" aria-expanded="false" aria-controls="releaseDetails">
+          <svg class="release-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M12 3v12m-5-5 5 5 5-5M4 16v4h16v-4"/>
+          </svg>
+          <span class="release-label">
+            <strong id="releaseHeading"></strong>
+            <small id="releaseToggleHint">See what's new</small>
+          </span>
+          <svg class="release-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+        </button>
+        <button id="releaseDismiss" class="release-dismiss" type="button" aria-label="Dismiss this release announcement" title="Dismiss this release announcement">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg>
+        </button>
+      </div>
+      <div id="releaseDetails" class="release-details" hidden>
+        <p id="releaseTitle" class="release-title"></p>
+        <ul id="releaseFeatures"></ul>
+        <p class="release-note">Already installed? Keep your compatible maps, settings and saved places.</p>
+        <div class="release-links">
+          <a id="releaseLink" class="release-primary" target="_blank" rel="noopener noreferrer">View release ↗</a>
+          <a id="releaseGuide" target="_blank" rel="noopener noreferrer">How to update ↗</a>
+        </div>
+      </div>
+    </section>
+
     <section class="intro">
-      <h1>Send a destination to your ClioPlay.</h1>
+      <h1 id="sendHeading" tabindex="-1">Send a destination to your ClioPlay.</h1>
       <p>Paste a full map link or coordinates, check the destination, then send it to the car.</p>
     </section>
 
@@ -112,10 +139,11 @@
 
     <p class="music-note">Music will stop during the transfer and may need to be resumed from your phone afterwards.</p>
 
-    <footer>ClioPlay Send</footer>
+    <footer>ClioPlay Send <button id="releaseReopen" class="release-reopen" type="button" hidden></button></footer>
   </main>
 
   <audio id="txAudio" preload="auto" playsinline></audio>
   <script type="module" src="./app.js?v=20261019"></script>
+  <script type="module" src="./release-notice.js"></script>
 </body>
 </html>

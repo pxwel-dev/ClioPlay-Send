@@ -43,6 +43,30 @@ Pair this sender with the bundled CLP2-capable head-unit executable. Browser
 media-session support and the phone's Bluetooth metadata behaviour affect
 transfer reliability; duration is adjustable for this reason.
 
+## ClioPlay release announcements
+
+The collapsed announcement below the header can be expanded or dismissed without
+interrupting the sender. Dismissal applies to the announced version (and any
+older cached version) on that browser; a newer release appears automatically.
+The footer link reopens the announcement without clearing the saved dismissal.
+The notice does not detect the version installed in a car, and no destination,
+vehicle or driving-history data is sent to a server by this feature.
+
+After publishing a new **downloadable** ClioPlay release, update `release.json`
+in this repository: change the numeric `version`, short `title`, one to eight
+user-facing `features`, and the exact published GitHub release and update-guide
+URLs. Commit that file and let Pages deploy it. No JavaScript, CSS or service
+worker cache-version change is needed for a metadata-only release. Do not
+announce an unreleased build. The app fetches the metadata independently on
+opening, uses the cached copy when offline, and hides the notice if no valid
+metadata is available. Storage-disabled browsers can dismiss for the session.
+
+Run the announcement regression tests with Node.js 22 or later:
+
+```sh
+node --test tests/*.test.mjs
+```
+
 ## Google Maps business links — 19 October 2026
 
 Apostrophes in names such as **Kareem's Grill** no longer truncate URLs.

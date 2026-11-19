@@ -1,5 +1,13 @@
 # Sender changes
 
+## 19 November 2026 — ClioPlay release announcements
+
+- Add a compact, expandable release notice and version-specific dismissal.
+- Include a feature summary, official release and software-update guide links.
+- Remember dismissal locally and allow reopening from the footer.
+- Load release metadata independently and cache it for offline PWA use.
+- Keep the destination parser, Bluetooth send protocol and transfer controls unchanged.
+
 ## 19 October 2026 — Google Maps business links
 
 - Preserve apostrophes in full URLs, including Kareem's Grill in Newcastle.
