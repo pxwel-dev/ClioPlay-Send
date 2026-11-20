@@ -252,7 +252,7 @@ textarea:focus, input:focus { border-color: #55c7df; box-shadow: 0 0 0 3px rgba(
 footer { padding: 25px 3px 0; text-align: center; color: #4f5b69; font-size: 11px; }
 
 /* Release announcement: in-flow, independent of the sender controls. */
-.release-notice[hidden], .release-details[hidden], .release-reopen[hidden] { display: none; }
+.release-notice[hidden], .release-details[hidden], .release-reopen[hidden], #shortLinkActions[hidden] { display: none; }
 .release-notice {
   margin-top: 14px;
   border: 1px solid #2b4c5c;

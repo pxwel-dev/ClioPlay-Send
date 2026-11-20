@@ -1,13 +1,11 @@
 {
-  "version": "2.2.0",
-  "title": "Smarter navigation. Easier updates.",
+  "version": "2.2.1",
+  "title": "Cross-border maps and lighter Bluetooth decoding",
   "features": [
-    "Intelligent destination suggestions based on optional offline driving history.",
-    "Favourite suggestions for frequently visited places.",
-    "Historical traffic estimates, adjusted ETAs and smarter diversions (not live traffic).",
-    "Redesigned Settings menu and improved Bluetooth device identification.",
-    "Software-only updates without rebuilding compatible maps."
+    "Select multiple regional OSM extracts in the installer and build a single cross-border map.",
+    "Bluetooth SBC decoding uses less computation while keeping playback output the same.",
+    "Already have compatible maps? Use the software-only update."
   ],
-  "releaseUrl": "https://github.com/pxwel-dev/ClioPlay/releases/tag/v.2.2.0",
+  "releaseUrl": "https://github.com/pxwel-dev/ClioPlay/releases/tag/v2.2.1",
   "updateUrl": "https://github.com/pxwel-dev/ClioPlay/blob/main/src/docs/updating.md"
 }

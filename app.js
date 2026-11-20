@@ -1,10 +1,16 @@
-import { parseDestination, buildPacket, sanitiseAvrcpName, validCoords } from "./parser.js?v=20261019";
+import { parseDestination, buildPacket, sanitiseAvrcpName, validCoords } from "./parser.js?v=20261120";
 
+import { expandMapLink } from "./short-links.js?v=20261120";
+
+const resolverEndpoint = document.querySelector('meta[name="map-link-resolver"]')?.content.trim();
 const $ = id => document.getElementById(id);
 const el = {
   destinationInput: $("destinationInput"),
   pasteButton: $("pasteButton"),
   parseMessage: $("parseMessage"),
+  shortLinkActions: $("shortLinkActions"),
+  expandLink: $("expandLink"),
+  openShortLink: $("openShortLink"),
   destinationCard: $("destinationCard"),
   sourceReadout: $("sourceReadout"),
   previewName: $("previewName"),
@@ -24,6 +30,8 @@ const el = {
 let deferredInstall = null;
 let audioObjectUrl = null;
 let parseTimer = null;
+let shortDestination = null;
+let activeLookup = null;
 let sendAction = "N";
 let sending = false;
 let sentTimer = null;
@@ -113,21 +121,71 @@ function clearDestination() {
   el.sendSubtext.textContent = "Choose a destination first";
 }
 
+function resetShortLink() {
+  activeLookup?.abort();
+  activeLookup = null;
+  shortDestination = null;
+  el.shortLinkActions.hidden = true;
+  el.openShortLink.removeAttribute("href");
+  el.expandLink.disabled = false;
+}
+
 function parseInput() {
+  clearTimeout(parseTimer);
+  resetShortLink();
   const result = parseDestination(el.destinationInput.value);
-  if (!result.ok) {
-    clearDestination();
-    if (el.destinationInput.value.trim()) setMessage(result.error, "error");
-    else setMessage("Paste a destination to begin.");
+  if (result.ok) {
+    applyParsed(result);
     return;
   }
-  applyParsed(result);
+
+  clearDestination();
+  if (result.shortLink) {
+    shortDestination = result;
+    el.openShortLink.href = result.shortLink;
+    el.expandLink.hidden = !resolverEndpoint;
+    el.shortLinkActions.hidden = false;
+    setMessage(resolverEndpoint
+      ? `Expand this ${result.provider} short link to preview the destination.`
+      : result.error);
+  } else if (el.destinationInput.value.trim()) setMessage(result.error, "error");
+  else setMessage("Paste a destination to begin.");
 }
 
 function scheduleParse() {
+  resetShortLink();
   clearDestination();
   clearTimeout(parseTimer);
   parseTimer = setTimeout(parseInput, 180);
+}
+
+async function resolveShortDestination() {
+  if (!shortDestination || !resolverEndpoint || activeLookup) return;
+  const source = shortDestination;
+  const lookup = new AbortController();
+  activeLookup = lookup;
+  const timeout = setTimeout(() => lookup.abort(), 7500);
+  el.expandLink.disabled = true;
+  setMessage(`Expanding the ${source.provider} link…`);
+  try {
+    const expanded = await expandMapLink(source.shortLink, resolverEndpoint, lookup.signal);
+    if (activeLookup !== lookup) return;
+    const result = parseDestination(expanded);
+    if (result.ok) {
+      resetShortLink();
+      applyParsed({ ...result, name: result.name || source.sharedName });
+    } else setMessage(result.error, "error");
+  } catch {
+    if (activeLookup === lookup) {
+      setMessage("Could not expand this link. Open it in a browser and paste the address-bar URL or pin coordinates.", "error");
+    }
+  } finally {
+    clearTimeout(timeout);
+    if (activeLookup === lookup) {
+      activeLookup = null;
+      el.expandLink.disabled = false;
+    }
+  }
 }
 
 function makeSilentWav(seconds) {
@@ -219,13 +277,17 @@ el.durationSelect.addEventListener("change", () => {
   remember("clp-send-seconds", String(transferDuration()));
 });
 el.destinationInput.addEventListener("input", scheduleParse);
-el.destinationInput.addEventListener("paste", () => setTimeout(parseInput, 0));
+el.expandLink.addEventListener("click", resolveShortDestination);
 el.nameInput.addEventListener("input", () => updateDestination(el.sourceReadout.textContent || "Destination"));
 el.latInput.addEventListener("input", () => {
+  clearTimeout(parseTimer);
+  resetShortLink();
   updateDestination("Coordinates");
   if (currentCoords()) setMessage("Coordinates ready.", "success");
 });
 el.lonInput.addEventListener("input", () => {
+  clearTimeout(parseTimer);
+  resetShortLink();
   updateDestination("Coordinates");
   if (currentCoords()) setMessage("Coordinates ready.", "success");
 });

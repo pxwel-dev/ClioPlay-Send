@@ -9,13 +9,16 @@ media metadata.</p>
 ## Use
 
 1. Connect your phone to CLIOPLAY Bluetooth and open this app.
-2. Paste full Google Maps, Apple Maps, Waze or OpenStreetMap destination links,
+2. Paste Google Maps, Apple Maps, Waze or OpenStreetMap destination links,
    or enter latitude and longitude. Check the detected destination.
 3. Choose **Route as new** or **Add as stop**, then **Send to ClioPlay**.
 
-For short links, first open them in your browser and copy the expanded URL.
-Links that identify only a map view or several possible coordinates need an
-explicit destination. The app does not resolve short links over a server.
+OpenStreetMap short links work directly, including offline. For Apple Maps and
+Google Maps short links, choose **Expand short link** when the site has a resolver
+configured. That action sends the short URL to the resolver, which requests its
+redirect from the map provider. You can also choose **Open map link** and paste the
+expanded address-bar URL or the destination coordinates. Always check the preview
+before sending, especially if a link contains only a map centre.
 
 The Bluetooth media window defaults to **4 seconds**. Transfer options allow
 1, 2, 3, 4, 5 or 8 seconds and remember your selection when browser storage is
@@ -42,6 +45,22 @@ PWA, close and reopen it if the previous version remains visible.
 Pair this sender with the bundled CLP2-capable head-unit executable. Browser
 media-session support and the phone's Bluetooth metadata behaviour affect
 transfer reliability; duration is adjustable for this reason.
+
+## Hosting the short-link resolver
+
+GitHub Pages serves static files. Map providers’ redirects need to be read by a
+separately hosted service because browsers do not expose those headers to the app.
+The Cloudflare Worker in `resolver/` handles only the supported Apple Maps and
+Google Maps short-link formats. It returns the expanded URL, and ClioPlay Send
+reads its coordinates locally. No geocoding keys are required.
+
+Deploy the Worker from this folder with `npx wrangler deploy --config resolver/wrangler.toml`.
+Set `SEND_ORIGIN` in the Worker configuration to your Send site's origin. Put the
+deployed HTTPS URL in the `map-link-resolver` meta tag in `index.html` before
+publishing the Pages site. The meta tag is empty by default, so the site offers
+**Open map link** until a resolver is configured. Keep Worker request logging
+disabled as specified in the configuration. Map providers still receive the link
+needed to perform the lookup.
 
 ## ClioPlay release announcements
 

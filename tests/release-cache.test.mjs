@@ -39,6 +39,7 @@ test("precache includes release metadata and script at the Pages subpath", async
   assert.ok(precached.includes(scope + "release.json"));
   assert.ok(precached.includes(scope + "release-notice.js"));
   assert.ok(precached.includes(scope + "app.js"));
+  assert.ok(precached.includes(scope + "short-links.js"));
 });
 
 test("fresh metadata wins, then network and HTTP failures fall back to cached metadata", async () => {

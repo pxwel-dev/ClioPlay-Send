@@ -1,8 +1,8 @@
-const CACHE = "clioplay-send-release-notice-20261119";
+const CACHE = "clioplay-send-20261120";
 const OWNED_PREFIX = "clioplay-send-";
 const ASSETS = [
   "./", "./index.html", "./styles.css", "./app.js", "./parser.js",
-  "./release-notice.js", "./release.json",
+  "./release-notice.js", "./release.json", "./short-links.js",
   "./manifest.webmanifest", "./icons/icon-192.png", "./icons/icon-512.png", "./icons/apple-touch-icon.png"
 ];
 

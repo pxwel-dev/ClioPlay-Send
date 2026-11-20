@@ -1,3 +1,5 @@
+import { shortMapProvider } from "./short-links.js?v=20261120";
+
 const COORD_PAIR = /(-?\d{1,3}(?:\.\d+)?)\s*[,; ]\s*(-?\d{1,3}(?:\.\d+)?)/;
 
 export function validCoords(lat, lon) {
@@ -73,13 +75,25 @@ function provider(host) {
   return "Map link";
 }
 
-function isShortLink(url) {
-  try {
-    const u = new URL(url), h = u.hostname.toLowerCase();
-    return h === "maps.apple" || h.endsWith(".maps.apple") || h === "maps.app.goo.gl" ||
-      (h === "goo.gl" && u.pathname.startsWith("/maps")) ||
-      ((h === "osm.org" || h.endsWith(".osm.org")) && u.pathname.startsWith("/go/"));
-  } catch { return false; }
+function osmShortParse(url) {
+  const match = url.pathname.match(/^\/go\/([A-Za-z0-9_~@]{1,11})[-=]{0,2}\/?$/);
+  if (!match) return null;
+  const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_~";
+  let x = 0, y = 0;
+  for (const char of match[1]) {
+    const tile = alphabet.indexOf(char === "@" ? "~" : char);
+    for (let shift = 4; shift >= 0; shift -= 2) {
+      x = 2 * x + ((tile >> (shift + 1)) & 1);
+      y = 2 * y + ((tile >> shift) & 1);
+    }
+  }
+  const scale = 2 ** (3 * match[1].length);
+  return {
+    lat: 180 * y / scale - 90,
+    lon: 360 * x / scale - 180,
+    name: "",
+    confidence: url.searchParams.has("m") ? "exact" : "map-center"
+  };
 }
 
 function geoParse(uri) {
@@ -217,11 +231,12 @@ export function parseDestination(input) {
   catch { return { ok: false, error: "That map link is not valid." }; }
 
   const source = provider(u.hostname);
-  if (isShortLink(urlText)) {
+  if (shortMapProvider(u)) {
     return {
       ok: false,
       provider: source,
-      shortLink: true,
+      shortLink: u.href,
+      sharedName: sharedName(raw, urlText),
       error: `${source} shortened this link. Open it in your browser, then copy the full URL from the address bar and paste it here.`
     };
   }
@@ -230,7 +245,7 @@ export function parseDestination(input) {
   if (source === "Google Maps") parsed = googleParse(u);
   else if (source === "Apple Maps") parsed = appleParse(u);
   else if (source === "Waze") parsed = wazeParse(u);
-  else if (source === "OpenStreetMap") parsed = osmParse(u);
+  else if (source === "OpenStreetMap") parsed = u.pathname.startsWith("/go/") ? osmShortParse(u) : osmParse(u);
   else parsed = genericParse(u);
 
   if (parsed?.error) return { ok: false, provider: source, error: parsed.error };

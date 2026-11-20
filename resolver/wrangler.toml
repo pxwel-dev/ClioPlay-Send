@@ -1,0 +1,9 @@
+name = "clioplay-send-resolver"
+main = "worker.mjs"
+compatibility_date = "2025-06-01"
+
+[vars]
+SEND_ORIGIN = "https://pxwel-dev.github.io"
+
+[observability]
+enabled = false

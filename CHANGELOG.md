@@ -1,5 +1,11 @@
 # Sender changes
 
+## 20 November 2026 — Short map links and ClioPlay 2.2.1
+
+- Announce ClioPlay 2.2.1 with links to the published release and update guide.
+- Decode OpenStreetMap short links locally.
+- Offer a direct **Open map link** action and support optional hosted redirect expansion for Apple Maps and Google Maps.
+
 ## 19 November 2026 — ClioPlay release announcements
 
 - Add a compact, expandable release notice and version-specific dismissal.

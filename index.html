@@ -1,6 +1,7 @@
 <!doctype html>
 <html lang="en">
 <head>
+  <meta name="map-link-resolver" content="https://clioplay-send-resolver.pxwel-dev.workers.dev">
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="theme-color" content="#10151c">
@@ -12,7 +13,7 @@
   <link rel="manifest" href="./manifest.webmanifest">
   <link rel="apple-touch-icon" href="./icons/apple-touch-icon.png">
   <link rel="icon" href="./icons/icon-192.png">
-  <link rel="stylesheet" href="./styles.css">
+  <link rel="stylesheet" href="./styles.css?v=20261120">
   <title>ClioPlay Send</title>
 </head>
 <body>
@@ -57,7 +58,7 @@
 
     <section class="intro">
       <h1 id="sendHeading" tabindex="-1">Send a destination to your ClioPlay.</h1>
-      <p>Paste a full map link or coordinates, check the destination, then send it to the car.</p>
+      <p>Paste a map link or coordinates, check the destination, then send it to the car.</p>
     </section>
 
     <section class="card">
@@ -67,6 +68,11 @@
       </div>
       <textarea id="destinationInput" rows="4" spellcheck="false" autocomplete="off" placeholder="Google Maps, Apple Maps, Waze, OpenStreetMap, or 51.5074, -0.1278"></textarea>
       <div id="parseMessage" class="message" role="status">Paste a destination to begin.</div>
+
+      <div id="shortLinkActions" class="release-links" hidden>
+        <button id="expandLink" class="text-button" type="button" title="Send this short URL to the ClioPlay Send resolver" hidden>Expand short link</button>
+        <a id="openShortLink" target="_blank" rel="noopener noreferrer">Open map link ↗</a>
+      </div>
 
       <div id="destinationCard" class="destination-card" hidden>
         <div class="destination-header">
@@ -143,7 +149,7 @@
   </main>
 
   <audio id="txAudio" preload="auto" playsinline></audio>
-  <script type="module" src="./app.js?v=20261019"></script>
+  <script type="module" src="./app.js?v=20261120"></script>
   <script type="module" src="./release-notice.js"></script>
 </body>
 </html>
