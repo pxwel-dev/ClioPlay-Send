@@ -1,11 +1,11 @@
 {
-  "version": "2.2.1",
-  "title": "Cross-border maps and lighter Bluetooth decoding",
+  "version": "2.2.2",
+  "title": "Major performance optimisation",
   "features": [
-    "Select multiple regional OSM extracts in the installer and build a single cross-border map.",
-    "Bluetooth SBC decoding uses less computation while keeping playback output the same.",
-    "Already have compatible maps? Use the software-only update."
+    "Smoother menus, popups and Explore rotation, with animations and dashboard updates targeting 20 fps.",
+    "Bluetooth audio has a 200 ms prefill for more playback headroom while the interface is busy.",
+    "Menus and keyboards wrap at the edges. Use Left or Right on the Trip footer to select Cancel route."
   ],
-  "releaseUrl": "https://github.com/pxwel-dev/ClioPlay/releases/tag/v2.2.1",
+  "releaseUrl": "https://github.com/pxwel-dev/ClioPlay/releases/tag/v2.2.2",
   "updateUrl": "https://github.com/pxwel-dev/ClioPlay/blob/main/src/docs/updating.md"
 }

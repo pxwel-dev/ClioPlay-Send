@@ -6,7 +6,7 @@ import { compareVersions, validRelease, initReleaseNotice } from "../release-not
 const data = JSON.parse(await readFile(new URL("../release.json", import.meta.url), "utf8"));
 const KEY = "clioplay-send-dismissed-release";
 const ids = ["releaseNotice", "releaseToggle", "releaseDismiss", "releaseDetails", "releaseReopen",
-  "releaseHeading", "releaseToggleHint", "releaseTitle", "releaseFeatures", "releaseLink", "releaseGuide", "sendHeading"];
+  "releaseHeading", "releaseToggleHint", "releaseFeatures", "releaseLink", "releaseGuide", "sendHeading"];
 function element() {
   const handlers = {};
   return { hidden: true, textContent: "", attributes: {}, children: [], focused: false,
@@ -45,6 +45,7 @@ test("collapsed by default, expands, collapses, dismisses, and reopens", async (
   assert.equal(await f.start(), true);
   const n = f.nodes;
   assert.equal(n.releaseNotice.hidden, false);
+  assert.equal(n.releaseHeading.textContent, `v${data.version} (${data.title})`);
   assert.equal(n.releaseDetails.hidden, true);
   assert.equal(n.releaseToggle.attributes["aria-expanded"], "false");
   assert.deepEqual(f.calls, [["./release.json", { cache: "no-store" }]]);
@@ -67,8 +68,8 @@ test("collapsed by default, expands, collapses, dismisses, and reopens", async (
 });
 
 test("dismissal persists for same or older cached version; newer appears", async () => {
-  for (const [version, hidden] of [["2.2.0", true], ["2.1.9", true], ["2.2.1", false]]) {
-    const f = fixture({ version, stored: "2.2.0" });
+  for (const [version, hidden] of [["2.2.1", true], ["2.1.9", true], ["2.2.2", false]]) {
+    const f = fixture({ version, stored: "2.2.1" });
     await f.start();
     assert.equal(f.nodes.releaseNotice.hidden, hidden);
     assert.equal(f.nodes.releaseReopen.hidden, false);

@@ -287,7 +287,6 @@ footer { padding: 25px 3px 0; text-align: center; color: #4f5b69; font-size: 11p
 .release-dismiss { flex: 0 0 44px; height: 44px; color: var(--muted); border-radius: 10px; }
 .release-dismiss svg { width: 17px; height: 17px; vertical-align: middle; }
 .release-details { margin: 0 12px; padding: 12px 2px 14px; border-top: 1px solid #2b4c5c; }
-.release-title { margin: 0 0 9px; font-size: 14px; font-weight: 750; }
 .release-details ul { margin: 0; padding-left: 17px; font-size: 13px; line-height: 1.5; }
 .release-details li + li { margin-top: 5px; }
 .release-details li::marker { color: var(--cyan); }

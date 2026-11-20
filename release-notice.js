@@ -75,8 +75,7 @@ export function initReleaseNotice({ doc = document, fetcher = fetch, storage } =
     .then(data => {
       if (!validRelease(data)) return false;
       release = data;
-      $("releaseHeading").textContent = `ClioPlay v${data.version} is available`;
-      $("releaseTitle").textContent = data.title;
+      $("releaseHeading").textContent = `v${data.version} (${data.title})`;
       const features = $("releaseFeatures");
       features.replaceChildren(...data.features.map(item => {
         const li = doc.createElement("li");
