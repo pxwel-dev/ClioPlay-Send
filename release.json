@@ -1,13 +1,14 @@
 {
-  "version": "2.2.3",
-  "title": "Nearby POIs, chained turns & instant Bluetooth",
+  "version": "2.2.4",
+  "title": "Offline ML habits, usual routes & roundabout cues",
   "features": [
-    "Browse nearby Fuel, Parking and Hospital POIs completely offline from Trip → Nearby or when adding stops.",
-    "Chained turns and roundabouts show a compact 'Then …' cue above the Turn card and promote smoothly.",
-    "Diversion confirmations include 'View diversion' to inspect the proposed bypass on the map before deciding.",
-    "Bluetooth AVRCP notifications deliver track, playback and ClioPlay Send updates immediately with automatic fallback.",
-    "Faster cold boot on regional atlases and cleaner, centred Itinerary scrolling."
+    "Personal road-class and cold-weather (<= 3 °C) ETA calibration with realistic ~X-Y min reliability ranges.",
+    "Clear separation between historical Traffic diversions (yellow bypass) and learned Usual routes (normal route plus dashed teal), with dedicated prompts.",
+    "Recurring stop suggestions, Usual parking prompts, dwell-time trip chains and cyan-star preferred Nearby POIs.",
+    "Amber Frequent slowdown ahead and Cold-weather slowdown ahead alerts for repeat hard-braking hotspots.",
+    "Adaptive speed-band Auto zoom and automatic Day/Night learned brightness, plus desktop offline history replay (tools/replay_history.py).",
+    "Route-coloured stop/destination markers (highlighting mapped destination POIs in route colour) and an expandable secondary manoeuvre pill for roundabouts."
   ],
-  "releaseUrl": "https://github.com/pxwel-dev/ClioPlay/releases/tag/v2.2.3",
+  "releaseUrl": "https://github.com/pxwel-dev/ClioPlay/releases/tag/v2.2.4",
   "updateUrl": "https://github.com/pxwel-dev/ClioPlay/blob/main/src/docs/updating.md"
 }
