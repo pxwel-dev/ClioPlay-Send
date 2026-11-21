@@ -22,9 +22,22 @@ before sending, especially if a link contains only a map centre.
 
 The Bluetooth media window defaults to **4 seconds**. Transfer options allow
 1, 2, 3, 4, 5 or 8 seconds and remember your selection when browser storage is
-available. Music pauses during transmission and may need to be resumed.
+available. With ClioPlay v2.2.3's AVRCP notifications, shorter send windows
+(1–2 seconds) usually transfer immediately while 4 seconds remains the safe
+default for all phones. Destination names preserve native UTF-8 scripts (up to
+40 characters / 160 UTF-8 bytes) without ASCII transliteration. Music pauses
+during transmission and may need to be resumed.
 The phone's success message reports completion of the send window; the protocol
 has no head-unit acknowledgement. Check the destination on the head unit.
+
+### Saved places and recent sends
+
+When browser storage is available, ClioPlay Send keeps an on-device list of
+**Saved places** and **Recent sends** (no server or account is used). Tap
+**Save** on any detected destination to bookmark it (tapping **Saved** removes
+it), or tap any saved or recent entry to load its name, coordinates and action
+ready to send again. If browser storage is blocked, these sections stay hidden
+automatically.
 
 ## Host
 

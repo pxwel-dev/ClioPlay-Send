@@ -39,6 +39,7 @@ test("precache includes release metadata and script at the Pages subpath", async
   assert.ok(precached.includes(scope + "release.json"));
   assert.ok(precached.includes(scope + "release-notice.js"));
   assert.ok(precached.includes(scope + "app.js"));
+  assert.ok(precached.includes(scope + "places-store.js"));
   assert.ok(precached.includes(scope + "short-links.js"));
 });
 

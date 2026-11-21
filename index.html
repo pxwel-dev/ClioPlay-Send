@@ -13,7 +13,7 @@
   <link rel="manifest" href="./manifest.webmanifest">
   <link rel="apple-touch-icon" href="./icons/apple-touch-icon.png">
   <link rel="icon" href="./icons/icon-192.png">
-  <link rel="stylesheet" href="./styles.css?v=20261120">
+  <link rel="stylesheet" href="./styles.css?v=20261121">
   <title>ClioPlay Send</title>
 </head>
 <body>
@@ -81,6 +81,7 @@
             <strong id="previewName">Phone destination</strong>
             <span id="previewCoords" class="coords"></span>
           </div>
+          <button id="savePlaceButton" class="save-pin-button" type="button" hidden>Save</button>
         </div>
 
         <label class="name-field" for="nameInput">
@@ -139,8 +140,20 @@
           <option value="8">8 seconds</option>
         </select>
       </label>
-      <p>Increase this if your car needs more time to switch to Bluetooth audio before receiving the destination.</p>
+      <p>With ClioPlay's instant Bluetooth updates, 1–2 seconds is usually enough. Increase this if your car needs more time to switch to Bluetooth audio.</p>
     </details>
+
+    <section id="placesCard" class="card places-card" aria-label="Saved and recent places" hidden>
+      <div class="places-header">
+        <div class="places-tabs" role="tablist" aria-label="Quick places">
+          <button id="savedTabButton" class="places-tab selected" type="button" role="tab" aria-selected="true">Saved</button>
+          <button id="recentTabButton" class="places-tab" type="button" role="tab" aria-selected="false">Recent</button>
+        </div>
+        <button id="clearRecentsButton" class="text-button places-clear" type="button" hidden>Clear</button>
+      </div>
+      <ul id="placesList" class="places-list"></ul>
+      <p id="placesEmpty" class="places-empty" hidden></p>
+    </section>
 
     <p class="music-note">Music will stop during the transfer and may need to be resumed from your phone afterwards.</p>
 
@@ -148,7 +161,7 @@
   </main>
 
   <audio id="txAudio" preload="auto" playsinline></audio>
-  <script type="module" src="./app.js?v=20261120"></script>
+  <script type="module" src="./app.js?v=20261121"></script>
   <script type="module" src="./release-notice.js"></script>
 </body>
 </html>

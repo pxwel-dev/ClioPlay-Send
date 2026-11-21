@@ -1,11 +1,13 @@
 {
-  "version": "2.2.2",
-  "title": "Major performance optimisation",
+  "version": "2.2.3",
+  "title": "Nearby POIs, chained turns & instant Bluetooth",
   "features": [
-    "Smoother menus, popups and Explore rotation, with animations and dashboard updates targeting 20 fps.",
-    "Bluetooth audio has a 200 ms prefill for more playback headroom while the interface is busy.",
-    "Menus and keyboards wrap at the edges. Use Left or Right on the Trip footer to select Cancel route."
+    "Browse nearby Fuel, Parking and Hospital POIs completely offline from Trip → Nearby or when adding stops.",
+    "Chained turns and roundabouts show a compact 'Then …' cue above the Turn card and promote smoothly.",
+    "Diversion confirmations include 'View diversion' to inspect the proposed bypass on the map before deciding.",
+    "Bluetooth AVRCP notifications deliver track, playback and ClioPlay Send updates immediately with automatic fallback.",
+    "Faster cold boot on regional atlases and cleaner, centred Itinerary scrolling."
   ],
-  "releaseUrl": "https://github.com/pxwel-dev/ClioPlay/releases/tag/v2.2.2",
+  "releaseUrl": "https://github.com/pxwel-dev/ClioPlay/releases/tag/v2.2.3",
   "updateUrl": "https://github.com/pxwel-dev/ClioPlay/blob/main/src/docs/updating.md"
 }

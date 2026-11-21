@@ -1,4 +1,4 @@
-import { shortMapProvider } from "./short-links.js?v=20261120";
+import { shortMapProvider } from "./short-links.js?v=20261121";
 
 const COORD_PAIR = /(-?\d{1,3}(?:\.\d+)?)\s*[,; ]\s*(-?\d{1,3}(?:\.\d+)?)/;
 
@@ -257,15 +257,24 @@ export function parseDestination(input) {
 
 export function sanitiseAvrcpName(name) {
   const clean = String(name || "PHONE DESTINATION")
-    .normalize("NFKD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/[‘’]/g, "'")
-    .replace(/[“”]/g, '"')
-    .replace(/[–—]/g, "-")
-    .replace(/[^\x20-\x7E]/g, " ")
+    .normalize("NFC")
+    .replace(/[\u0000-\u001F\u007F-\u009F\u200B-\u200D\uFEFF]/g, " ")
     .replace(/\s+/g, " ")
     .trim();
-  return (clean || "PHONE DESTINATION").slice(0, 40);
+  if (!clean) return "PHONE DESTINATION";
+  let out = "";
+  let chars = 0;
+  let bytes = 0;
+  for (const ch of clean) {
+    if (chars >= 40) break;
+    const cp = ch.codePointAt(0);
+    const len = cp < 0x80 ? 1 : cp < 0x800 ? 2 : cp < 0x10000 ? 3 : 4;
+    if (bytes + len > 160) break;
+    out += ch;
+    chars++;
+    bytes += len;
+  }
+  return out || "PHONE DESTINATION";
 }
 
 function crc16Ccitt(text) {

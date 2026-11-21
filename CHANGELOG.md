@@ -1,5 +1,12 @@
 # Sender changes
 
+## 21 November 2026 — Saved places, native UTF-8 names and ClioPlay 2.2.3
+
+- Update the release announcement notice (`release.json`) to **ClioPlay v2.2.3** with links to the release and update guide.
+- Preserve native UTF-8 international destination names directly over AVRCP (NFC normalised, control/zero-width characters stripped, up to 40 code points / 160 UTF-8 bytes).
+- Add on-device **Saved places** and **Recent sends** (`places-store.js`, stored in `localStorage`) with one-tap reload, Save/Saved toggle, Stop badges, Clear recents, and automatic hiding when browser storage is unavailable.
+- Bump the service worker cache (`clioplay-send-20261121-1`) to include `places-store.js` and refreshed assets.
+
 ## 20 November 2026 — Short map links and ClioPlay 2.2.1
 
 - Announce ClioPlay 2.2.1 with links to the published release and update guide.

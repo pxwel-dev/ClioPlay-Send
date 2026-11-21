@@ -1,6 +1,11 @@
-import { parseDestination, buildPacket, sanitiseAvrcpName, validCoords } from "./parser.js?v=20261120";
+import { parseDestination, buildPacket, sanitiseAvrcpName, validCoords } from "./parser.js?v=20261121";
 
-import { expandMapLink } from "./short-links.js?v=20261120";
+import { expandMapLink } from "./short-links.js?v=20261121";
+import {
+  RECENT_KEY, SAVED_KEY, RECENT_MAX, SAVED_MAX,
+  storageAvailable, loadPlaces, recordRecent, clearRecents,
+  findSavedIndex, savePlace, removeSavedPlace
+} from "./places-store.js?v=20261121";
 
 const resolverEndpoint = document.querySelector('meta[name="map-link-resolver"]')?.content.trim();
 const $ = id => document.getElementById(id);
@@ -15,6 +20,7 @@ const el = {
   sourceReadout: $("sourceReadout"),
   previewName: $("previewName"),
   previewCoords: $("previewCoords"),
+  savePlaceButton: $("savePlaceButton"),
   nameInput: $("nameInput"),
   latInput: $("latInput"),
   lonInput: $("lonInput"),
@@ -23,6 +29,12 @@ const el = {
   routeNewButton: $("routeNewButton"),
   addStopButton: $("addStopButton"),
   durationSelect: $("durationSelect"),
+  placesCard: $("placesCard"),
+  savedTabButton: $("savedTabButton"),
+  recentTabButton: $("recentTabButton"),
+  clearRecentsButton: $("clearRecentsButton"),
+  placesList: $("placesList"),
+  placesEmpty: $("placesEmpty"),
   txAudio: $("txAudio"),
   installButton: $("installButton")
 };
@@ -35,6 +47,11 @@ let activeLookup = null;
 let sendAction = "N";
 let sending = false;
 let sentTimer = null;
+const canStorePlaces = storageAvailable();
+let savedPlaces = canStorePlaces ? loadPlaces(localStorage, SAVED_KEY, SAVED_MAX) : [];
+let recentPlaces = canStorePlaces ? loadPlaces(localStorage, RECENT_KEY, RECENT_MAX) : [];
+let activePlacesTab = savedPlaces.length ? "saved" : "recent";
+let pendingSentPlace = null;
 
 function stored(key, fallback) {
   try { return localStorage.getItem(key) ?? fallback; } catch { return fallback; }
@@ -79,10 +96,99 @@ function currentCoords() {
   return validCoords(lat, lon) ? { lat, lon } : null;
 }
 
+function updateSaveButton(coords) {
+  if (!canStorePlaces || !coords) {
+    el.savePlaceButton.hidden = true;
+    return;
+  }
+  const idx = findSavedIndex(savedPlaces, coords.lat, coords.lon);
+  const isSaved = idx >= 0;
+  el.savePlaceButton.hidden = false;
+  el.savePlaceButton.classList.toggle("saved", isSaved);
+  el.savePlaceButton.textContent = isSaved ? "Saved" : "Save";
+  el.savePlaceButton.setAttribute("aria-pressed", String(isSaved));
+}
+
+function loadQuickPlace(entry, sourceLabel) {
+  clearTimeout(parseTimer);
+  resetShortLink();
+  el.destinationInput.value = "";
+  el.latInput.value = entry.lat.toFixed(6);
+  el.lonInput.value = entry.lon.toFixed(6);
+  el.nameInput.value = entry.name || "Phone destination";
+  if (entry.action === "S" || entry.action === "N") setSendAction(entry.action);
+  setMessage(`${sourceLabel} destination ready.`, "success");
+  updateDestination(sourceLabel);
+}
+
+function renderPlaces() {
+  if (!canStorePlaces || (!savedPlaces.length && !recentPlaces.length)) {
+    el.placesCard.hidden = true;
+    return;
+  }
+  if (activePlacesTab === "saved" && !savedPlaces.length && recentPlaces.length) activePlacesTab = "recent";
+  if (activePlacesTab === "recent" && !recentPlaces.length && savedPlaces.length) activePlacesTab = "saved";
+
+  const isSavedTab = activePlacesTab === "saved";
+  el.placesCard.hidden = false;
+  el.savedTabButton.classList.toggle("selected", isSavedTab);
+  el.recentTabButton.classList.toggle("selected", !isSavedTab);
+  el.savedTabButton.setAttribute("aria-selected", String(isSavedTab));
+  el.recentTabButton.setAttribute("aria-selected", String(!isSavedTab));
+  el.savedTabButton.textContent = savedPlaces.length ? `Saved (${savedPlaces.length})` : "Saved";
+  el.recentTabButton.textContent = recentPlaces.length ? `Recent (${recentPlaces.length})` : "Recent";
+  el.clearRecentsButton.hidden = isSavedTab || !recentPlaces.length;
+
+  const list = isSavedTab ? savedPlaces : recentPlaces;
+  el.placesList.replaceChildren();
+  if (!list.length) {
+    el.placesEmpty.hidden = false;
+    el.placesEmpty.textContent = isSavedTab ? "No saved places yet." : "No recent sends yet.";
+    return;
+  }
+  el.placesEmpty.hidden = true;
+  for (let i = 0; i < list.length; i++) {
+    const item = list[i];
+    const li = document.createElement("li");
+    li.className = "place-row";
+    const loadBtn = document.createElement("button");
+    loadBtn.type = "button";
+    loadBtn.className = "place-load";
+    const title = document.createElement("strong");
+    title.textContent = item.name;
+    if (!isSavedTab && item.action === "S") {
+      const badge = document.createElement("span");
+      badge.className = "place-badge";
+      badge.textContent = "Stop";
+      title.appendChild(badge);
+    }
+    const coords = document.createElement("small");
+    coords.textContent = `${item.lat.toFixed(5)}, ${item.lon.toFixed(5)}`;
+    loadBtn.append(title, coords);
+    loadBtn.addEventListener("click", () => loadQuickPlace(item, isSavedTab ? "Saved place" : "Recent"));
+    li.appendChild(loadBtn);
+    if (isSavedTab) {
+      const removeBtn = document.createElement("button");
+      removeBtn.type = "button";
+      removeBtn.className = "place-remove";
+      removeBtn.textContent = "×";
+      removeBtn.setAttribute("aria-label", `Remove ${item.name}`);
+      removeBtn.addEventListener("click", () => {
+        savedPlaces = removeSavedPlace(localStorage, i);
+        updateSaveButton(currentCoords());
+        renderPlaces();
+      });
+      li.appendChild(removeBtn);
+    }
+    el.placesList.appendChild(li);
+  }
+}
+
 function updateDestination(provider = "Destination") {
   const coords = currentCoords();
   if (!coords) {
     el.destinationCard.hidden = true;
+    el.savePlaceButton.hidden = true;
     el.sendButton.disabled = true;
     el.sendSubtext.textContent = "Choose a destination first";
     return;
@@ -93,6 +199,7 @@ function updateDestination(provider = "Destination") {
   el.previewName.textContent = name;
   el.previewCoords.textContent = `${coords.lat.toFixed(6)}, ${coords.lon.toFixed(6)}`;
   el.destinationCard.hidden = false;
+  updateSaveButton(coords);
   el.sendButton.disabled = sending || !mediaSupported();
   if (!sending) el.sendSubtext.textContent = mediaSupported() ? "Ready to send" : "Browser not supported";
 }
@@ -107,7 +214,7 @@ function applyParsed(result) {
   else if (result.confidence === "heuristic") note = "Coordinates found in the link. Check them before sending.";
 
   const simplified = sanitiseAvrcpName(el.nameInput.value);
-  if (simplified !== el.nameInput.value.trim()) note += " The name will be simplified for the current ClioPlay Bluetooth connection.";
+  if (simplified !== el.nameInput.value.trim().normalize("NFC")) note += " The name will be shortened to fit ClioPlay's 40-character limit.";
   setMessage(note, result.confidence === "exact" ? "success" : "");
   updateDestination(result.provider);
 }
@@ -241,6 +348,7 @@ async function transmit() {
   el.sendButton.classList.remove("sent");
 
   const packet = buildPacket(coords.lat, coords.lon, el.nameInput.value.trim(), nextSequence(), sendAction);
+  pendingSentPlace = { name: el.nameInput.value.trim() || "Phone destination", lat: coords.lat, lon: coords.lon, action: sendAction };
   if (audioObjectUrl) URL.revokeObjectURL(audioObjectUrl);
   audioObjectUrl = URL.createObjectURL(makeSilentWav(transferDuration()));
   el.txAudio.src = audioObjectUrl;
@@ -268,7 +376,32 @@ el.txAudio.addEventListener("ended", () => {
   if (!sending) return;
   sending = false;
   clearMediaSession();
+  if (canStorePlaces && pendingSentPlace) {
+    recentPlaces = recordRecent(localStorage, pendingSentPlace);
+    renderPlaces();
+  }
+  pendingSentPlace = null;
   showSent();
+});
+el.savePlaceButton.addEventListener("click", () => {
+  const coords = currentCoords();
+  if (!canStorePlaces || !coords) return;
+  const idx = findSavedIndex(savedPlaces, coords.lat, coords.lon);
+  if (idx >= 0) {
+    savedPlaces = removeSavedPlace(localStorage, idx);
+  } else {
+    savedPlaces = savePlace(localStorage, { name: el.nameInput.value.trim() || "Phone destination", lat: coords.lat, lon: coords.lon });
+    activePlacesTab = "saved";
+  }
+  updateSaveButton(coords);
+  renderPlaces();
+});
+el.savedTabButton.addEventListener("click", () => { activePlacesTab = "saved"; renderPlaces(); });
+el.recentTabButton.addEventListener("click", () => { activePlacesTab = "recent"; renderPlaces(); });
+el.clearRecentsButton.addEventListener("click", () => {
+  if (!canStorePlaces) return;
+  recentPlaces = clearRecents(localStorage);
+  renderPlaces();
 });
 el.sendButton.addEventListener("click", transmit);
 el.routeNewButton.addEventListener("click", () => setSendAction("N"));
@@ -328,4 +461,5 @@ if ("serviceWorker" in navigator) navigator.serviceWorker.register("./sw.js").ca
 if (!mediaSupported()) setMessage("This browser does not support the media feature ClioPlay Send needs.", "error");
 loadTransferDuration();
 setSendAction("N");
+renderPlaces();
 consumeShareTarget();
