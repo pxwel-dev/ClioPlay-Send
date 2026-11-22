@@ -1,14 +1,14 @@
 {
-  "version": "2.2.6",
-  "title": "Live GPS HUD, Z9–Z4 zoom & unguided ML",
+  "version": "2.2.6.1",
+  "title": "Close-up road alignment fix, unguided ML & GPS HUD",
   "features": [
-    "Unguided local ML learning: Preferred Nearby POIs, Usual Parking (including habitual car parks with no saved places nearby), POI-named stops/predictions and Usual Route shortcuts now learn without an active route.",
-    "Unguided commute alerts: Likely traffic ahead, Frequent slowdown ahead and Cold-weather slowdown ahead now warn without a route, with dynamic smooth-pass hazard decay and age expiry.",
+    "Fixed close-up road alignment at Z6–Z9: display-only, camera-coupled Z6-reference visual road matching keeps the vehicle icon and active magenta route cleanly centred on roads at cropped zooms Z7–Z9 using heading alignment, active-route corridor preference, service-road filtering, dual-carriageway hysteresis and smooth easing (zero map rebuilds, raw GPS/routing/ML untouched).",
+    "Unguided local ML learning: Preferred Nearby POIs, Usual Parking (including habitual car parks with no saved places nearby), POI-named stops/predictions and Usual Route shortcuts learn without an active route.",
+    "Unguided commute alerts: Likely traffic ahead, Frequent slowdown ahead and Cold-weather slowdown ahead warn without a route, with dynamic smooth-pass hazard decay and age expiry.",
     "Weekday vs. weekend weighting for destination predictions, plus Adaptive Auto-zoom aligned to Z9–Z4 hysteresis bands with a 20-second sustained-override guard.",
     "Live expandable GPS HUD inside the top clock pill (HH:MM:SS seconds, Day/Night compass dial, accuracy, satellites, altitude and coordinates), adapting cleanly to popups and menus — toggled by double-OK or console REPEAT.",
-    "Expanded Auto zoom and manual driving zoom across Z9–Z4 with speed hysteresis, plus crisp Z7–Z9 close-up road geometry and street names using existing map packs.",
-    "Tighter View diversion and View route Explore framing across the full 480 × 272 screen."
+    "Expanded Auto zoom and manual driving zoom across Z9–Z4 with speed hysteresis, close-up Z7–Z9 street names and tighter View diversion / View route Explore framing."
   ],
-  "releaseUrl": "https://github.com/pxwel-dev/ClioPlay/releases/tag/v2.2.6",
+  "releaseUrl": "https://github.com/pxwel-dev/ClioPlay/releases/tag/v2.2.6.1",
   "updateUrl": "https://github.com/pxwel-dev/ClioPlay/blob/main/src/docs/updating.md"
 }
