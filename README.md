@@ -84,10 +84,11 @@ The footer link reopens the announcement without clearing the saved dismissal.
 The notice does not detect the version installed in a car, and no destination,
 vehicle or driving-history data is sent to a server by this feature.
 
-After publishing a new **downloadable** ClioPlay release, update `release.json`
-in this repository: change the numeric `version`, short `title`, one to eight
-user-facing `features`, and the exact published GitHub release and update-guide
-URLs. Commit that file and let Pages deploy it. No JavaScript, CSS or service
+Prepare `release.json` with the numeric `version`, a short `title`, one to eight
+user-facing `features` of up to 240 characters each, and the GitHub release and
+update-guide URLs. Versions can have three or four components, such as `2.2.6`
+or `2.2.6.2`. Publish the downloadable ClioPlay release first, then verify the
+URLs and deploy the announcement through Pages. No JavaScript, CSS or service
 worker cache-version change is needed for a metadata-only release. Do not
 announce an unreleased build. The app fetches the metadata independently on
 opening, uses the cached copy when offline, and hides the notice if no valid

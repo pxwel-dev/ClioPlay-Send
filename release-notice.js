@@ -1,13 +1,14 @@
 const DISMISSED_KEY = "clioplay-send-dismissed-release";
-const VERSION = /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$/;
+const VERSION = /^(?:0|[1-9]\d*)(?:\.(?:0|[1-9]\d*)){2,3}$/;
 const REPO = "/pxwel-dev/ClioPlay/";
 
 export function compareVersions(a, b) {
   if (typeof a !== "string" || !VERSION.test(a)) return -1;
   if (typeof b !== "string" || !VERSION.test(b)) return 1;
   const left = a.split(".").map(BigInt), right = b.split(".").map(BigInt);
-  for (let i = 0; i < 3; i++) {
-    if (left[i] !== right[i]) return left[i] > right[i] ? 1 : -1;
+  for (let i = 0; i < Math.max(left.length, right.length); i++) {
+    const leftPart = left[i] ?? 0n, rightPart = right[i] ?? 0n;
+    if (leftPart !== rightPart) return leftPart > rightPart ? 1 : -1;
   }
   return 0;
 }

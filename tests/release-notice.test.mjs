@@ -35,9 +35,16 @@ test("manifest validates; numeric comparison and unsafe link rejection", () => {
   assert.equal(compareVersions("2.10.0", "2.9.9"), 1);
   assert.equal(compareVersions("2.2.0", "2.2.0"), 0);
   assert.equal(compareVersions("2.2.0", "bad"), 1);
+  assert.equal(compareVersions("2.2.6.1", "2.2.6"), 1);
+  assert.equal(compareVersions("2.2.6", "2.2.6.0"), 0);
+  assert.equal(compareVersions("2.2.6.2", "2.2.6.10"), -1);
+  assert.ok(validRelease({ ...data, version: "2.2.6.1" }));
+  assert.ok(!validRelease({ ...data, version: "2.2.6.02" }));
+  assert.ok(!validRelease({ ...data, version: "2.2.6.2.1" }));
   assert.ok(!validRelease({ ...data, releaseUrl: "javascript:alert(1)" }));
   assert.ok(!validRelease({ ...data, updateUrl: "https://github.com/elsewhere/repo/blob/main/readme" }));
   assert.ok(!validRelease({ ...data, features: [null] }));
+  assert.ok(!validRelease({ ...data, features: ["x".repeat(241)] }));
 });
 
 test("collapsed by default, expands, collapses, dismisses, and reopens", async () => {
@@ -68,8 +75,13 @@ test("collapsed by default, expands, collapses, dismisses, and reopens", async (
 });
 
 test("dismissal persists for same or older cached version; newer appears", async () => {
-  for (const [version, hidden] of [["2.2.1", true], ["2.1.9", true], ["2.2.2", false]]) {
-    const f = fixture({ version, stored: "2.2.1" });
+  const cases = [
+    ["2.2.1", "2.2.1", true], ["2.1.9", "2.2.1", true], ["2.2.2", "2.2.1", false],
+    ["2.2.6.1", "2.2.6.1", true], ["2.2.6", "2.2.6.1", true],
+    ["2.2.6.2", "2.2.6.1", false], ["2.2.6.2", "2.2.6", false],
+  ];
+  for (const [version, stored, hidden] of cases) {
+    const f = fixture({ version, stored });
     await f.start();
     assert.equal(f.nodes.releaseNotice.hidden, hidden);
     assert.equal(f.nodes.releaseReopen.hidden, false);
