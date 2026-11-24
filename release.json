@@ -1,12 +1,13 @@
 {
   "version": "2.2.6.2",
-  "title": "Close-up map fix after parking off-road",
+  "title": "Routing fixes, fewer turns & close-up map update",
   "features": [
-    "At close zoom, the vehicle marker now eases back to its GPS-based position when you pull off the road and stop. The software update works with existing maps.",
-    "Close-up road alignment at Z6–Z9 keeps the map, vehicle marker and visible route origin lined up using the existing Z6 road geometry.",
+    "Eliminated unnecessary U-turn spurs: two-way streets now pick the right direction at start and destination, and bounded cleanup bypasses remaining turn-restricted spurs and sharp reversals without breaking needed U-turns.",
+    "Simpler routes with fewer turns: tight multi-turn side-street zigzags are replaced with straighter legal main roads when added travel time stays small (within 20%, capped at 30 s per leg) while keeping true driving-time ETA.",
+    "Fixed close-up road snap after parking off-road: at Z6–Z9, pulling into a car park or driveway and stopping now smoothly eases the map and vehicle arrow back to GPS. Software-only update — 100% compatible with existing maps.",
+    "Close-up road alignment at Z6–Z9 (2.2.6.1): display-only road matching keeps the vehicle marker and route start cleanly centred on roads using existing Z6 geometry.",
     "Unguided local ML learning: Preferred Nearby POIs, Usual Parking (including habitual car parks with no saved places nearby), POI-named stops/predictions and Usual Route shortcuts learn without an active route.",
-    "Unguided commute alerts: Likely traffic ahead, Frequent slowdown ahead and Cold-weather slowdown ahead warn without a route, with dynamic smooth-pass hazard decay and age expiry.",
-    "Weekday vs. weekend weighting for destination predictions, plus Adaptive Auto-zoom aligned to Z9–Z4 hysteresis bands with a 20-second sustained-override guard.",
+    "Unguided commute alerts & predictions: Likely traffic, Frequent slowdown and Cold-weather slowdown cues warn without a route (with dynamic hazard decay/expiry), alongside weekday/weekend weighting and aligned Adaptive Auto-zoom.",
     "Live expandable GPS HUD inside the top clock pill (HH:MM:SS seconds, Day/Night compass dial, accuracy, satellites, altitude and coordinates), adapting cleanly to popups and menus — toggled by double-OK or console REPEAT.",
     "Expanded Auto zoom and manual driving zoom across Z9–Z4 with speed hysteresis, close-up Z7–Z9 street names and tighter View diversion / View route Explore framing."
   ],

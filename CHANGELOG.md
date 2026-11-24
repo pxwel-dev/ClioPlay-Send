@@ -1,9 +1,9 @@
 # Sender changes
 
-## In development — ClioPlay 2.2.6.2 announcement
+## 24 November 2026 — ClioPlay 2.2.6.2 announcement
 
 - Show release announcements for four-part versions such as `2.2.6.2` and compare all components when remembering dismissals.
-- Prepare the ClioPlay 2.2.6.2 notice with a short summary of the close-up map fix for parking off-road.
+- Update the release announcement notice (`release.json`) to **ClioPlay v2.2.6.2** covering U-turn spur elimination, simpler routes with fewer turns, and the parked off-road close-up map fix.
 - Refresh the cached release announcement script in installed web apps.
 
 ## 21 November 2026 — Saved places, native UTF-8 names and ClioPlay 2.2.3
