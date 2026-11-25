@@ -1,5 +1,9 @@
 # Sender changes
 
+## 25 November 2026 — ClioPlay 2.2.6.3 announcement
+
+- Update the release announcement notice (`release.json`) to **ClioPlay v2.2.6.3** covering the FAT32/exFAT SD-card install/update fixes, Windows WSL `venv` + `ensurepip` preflight, opt-in parallel atlas builder (`CLIOPLAY_PIPELINE=1`) and cached C++ build helpers.
+
 ## 24 November 2026 — ClioPlay 2.2.6.2 announcement
 
 - Show release announcements for four-part versions such as `2.2.6.2` and compare all components when remembering dismissals.

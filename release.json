@@ -1,16 +1,16 @@
 {
-  "version": "2.2.6.2",
-  "title": "Routing fixes, fewer turns & close-up map update",
+  "version": "2.2.6.3",
+  "title": "Installer, map-builder & routing update",
   "features": [
-    "Eliminated unnecessary U-turn spurs: two-way streets now pick the right direction at start and destination, and bounded cleanup bypasses remaining turn-restricted spurs and sharp reversals without breaking needed U-turns.",
-    "Simpler routes with fewer turns: tight multi-turn side-street zigzags are replaced with straighter legal main roads when added travel time stays small (within 20%, capped at 30 s per leg) while keeping true driving-time ETA.",
-    "Fixed close-up road snap after parking off-road: at Z6–Z9, pulling into a car park or driveway and stopping now smoothly eases the map and vehicle arrow back to GPS. Software-only update — 100% compatible with existing maps.",
-    "Close-up road alignment at Z6–Z9 (2.2.6.1): display-only road matching keeps the vehicle marker and route start cleanly centred on roads using existing Z6 geometry.",
+    "Installer & Windows WSL fixes (2.2.6.3): FAT32/exFAT SD-card installs and --update no longer abort on chmod EPERM, and the WSL launcher now verifies venv + ensurepip up front. Head-unit runtime is unchanged from 2.2.6.2.",
+    "Faster map building (2.2.6.3): opt-in parallel atlas builds (CLIOPLAY_PIPELINE=1) across Linux, WSL 2 and macOS with deterministic splits and fail-fast cancellation, plus private per-user caching of C++ build helpers.",
+    "Eliminated unnecessary U-turn spurs (2.2.6.2): two-way streets now pick the right direction at start and destination, and bounded cleanup bypasses remaining turn-restricted spurs and sharp reversals without breaking needed U-turns.",
+    "Simpler routes with fewer turns (2.2.6.2): tight multi-turn side-street zigzags are replaced with straighter legal main roads when added travel time stays small (within 20%, capped at 30 s per leg) with true driving-time ETA.",
+    "Close-up Z6–Z9 road alignment & parked snap release (2.2.6.1–2.2.6.2): keeps the vehicle marker and route start centred on roads using existing Z6 geometry, and smoothly eases back to GPS after parking off-road.",
     "Unguided local ML learning: Preferred Nearby POIs, Usual Parking (including habitual car parks with no saved places nearby), POI-named stops/predictions and Usual Route shortcuts learn without an active route.",
     "Unguided commute alerts & predictions: Likely traffic, Frequent slowdown and Cold-weather slowdown cues warn without a route (with dynamic hazard decay/expiry), alongside weekday/weekend weighting and aligned Adaptive Auto-zoom.",
-    "Live expandable GPS HUD inside the top clock pill (HH:MM:SS seconds, Day/Night compass dial, accuracy, satellites, altitude and coordinates), adapting cleanly to popups and menus — toggled by double-OK or console REPEAT.",
-    "Expanded Auto zoom and manual driving zoom across Z9–Z4 with speed hysteresis, close-up Z7–Z9 street names and tighter View diversion / View route Explore framing."
+    "Live expandable GPS HUD inside the top clock pill (HH:MM:SS seconds, compass dial, accuracy, satellites, altitude and coordinates) toggled by double-OK or REPEAT, plus Z9–Z4 Auto zoom and tighter Explore diversion framing."
   ],
-  "releaseUrl": "https://github.com/pxwel-dev/ClioPlay/releases/tag/v2.2.6.2",
+  "releaseUrl": "https://github.com/pxwel-dev/ClioPlay/releases/tag/v2.2.6.3",
   "updateUrl": "https://github.com/pxwel-dev/ClioPlay/blob/main/src/docs/updating.md"
 }
