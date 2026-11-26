@@ -14,7 +14,8 @@
   - Added **Waze** offline Base32 geohash decoding (`waze.com/ul/h…`), Waze short-link redirect support (`waze.com/ul/…`), and Live Map destination-name parsing.
   - Added iOS 18+ Apple Maps apex domain (`maps.apple/…`) and `beta.maps.apple.com` support.
   - Added `OPTIONS` CORS preflight support, `http://` → `https://` upgrades for allowlisted shorteners, multi-origin `SEND_ORIGIN` allowlists, DMS & cardinal coordinate parsing, OpenStreetMap `/directions?route=…`, Google `!2d!3d` & `/maps/search/lat,lon`, RFC 5870 `geo:` URIs, and scheme-less map links.
-  - Bumped PWA asset query versions (`?v=20261126`) and service worker cache (`clioplay-send-20261126-1`).
+  - Modernised the PWA & home-screen app icons (`icons/icon-512.png`, `icons/icon-192.png`, `icons/apple-touch-icon.png`, `icons/icon.svg`) and top-bar emblem to match ClioPlay's official blue-gradient (`#4AB1FF → #0060EB`) navigation arrow with full-bleed iOS/Android maskable framing and wireless send arcs.
+  - Bumped PWA asset query versions (`?v=20261126-2`) and service worker cache (`clioplay-send-20261126-2`).
 
 ## 26 November 2026 — ClioPlay 2.2.7 announcement
 

@@ -1,9 +1,9 @@
-const CACHE = "clioplay-send-20261126-1";
+const CACHE = "clioplay-send-20261126-2";
 const OWNED_PREFIX = "clioplay-send-";
 const ASSETS = [
   "./", "./index.html", "./styles.css", "./app.js", "./parser.js", "./places-store.js",
   "./release-notice.js", "./release.json", "./short-links.js",
-  "./manifest.webmanifest", "./icons/icon-192.png", "./icons/icon-512.png", "./icons/apple-touch-icon.png"
+  "./manifest.webmanifest", "./icons/icon.svg", "./icons/icon-192.png", "./icons/icon-512.png", "./icons/apple-touch-icon.png"
 ];
 
 self.addEventListener("install", event => {
