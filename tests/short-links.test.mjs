@@ -37,6 +37,71 @@ test("Waze geohash share links decode locally offline", () => {
   assert.equal(bare.provider, "Waze");
 });
 
+test("CoMaps shares, comaps.at, cm://, ge0://, /map, /route and copied coords decode offline", () => {
+  const share = `Check out\nHeron Foods\nSupermarket\nClayton Street, 87\nhttps://comaps.at/4tfxZ6WK7g/Heron_Foods`;
+  const heron = parseDestination(share);
+  assert.equal(heron.ok, true);
+  assert.equal(heron.provider, "CoMaps");
+  assert.equal(heron.name, "Heron Foods");
+  assert.equal(heron.confidence, "exact");
+  assert.equal(heron.lat.toFixed(6), "54.971118");
+  assert.equal(heron.lon.toFixed(6), "-1.617628");
+
+  // Unnamed CoMaps share skips boilerplate "Check out" line and uses address/title line
+  const unnamed = parseDestination("Check out\nClayton Street, 87\nhttps://comaps.at/4tfxZ6WK7g");
+  assert.equal(unnamed.ok, true);
+  assert.equal(unnamed.provider, "CoMaps");
+  assert.equal(unnamed.name, "Clayton Street, 87");
+  assert.equal(unnamed.lat.toFixed(6), "54.971118");
+  assert.equal(unnamed.lon.toFixed(6), "-1.617628");
+
+  // cm:// and ge0:// deep links preserve Base64 case and decode identically
+  for (const uri of ["cm://4tfxZ6WK7g/Heron_Foods", "ge0://4tfxZ6WK7g/Heron_Foods", "comaps.at/4tfxZ6WK7g/Heron_Foods"]) {
+    const res = parseDestination(uri);
+    assert.equal(res.ok, true);
+    assert.equal(res.provider, "CoMaps");
+    assert.equal(res.name, "Heron Foods");
+    assert.equal(res.lat.toFixed(6), "54.971118");
+    assert.equal(res.lon.toFixed(6), "-1.617628");
+  }
+
+  // CoMaps /map single pin vs multi-pin ambiguity
+  const mapPin = parseDestination("https://comaps.at/map?v=1&ll=54.971118,-1.617628&n=Heron_Foods");
+  assert.equal(mapPin.ok, true);
+  assert.equal(mapPin.provider, "CoMaps");
+  assert.equal(mapPin.name, "Heron Foods");
+  assert.equal(mapPin.lat, 54.971118);
+  assert.equal(mapPin.lon, -1.617628);
+
+  const multiPin = parseDestination("cm://map?v=1&ll=54.971118,-1.617628&n=A&ll=51.5074,-0.1278&n=B");
+  assert.equal(multiPin.ok, false);
+  assert.match(multiPin.error, /more than one location/i);
+
+  // CoMaps /route destination extraction
+  const route = parseDestination("https://comaps.at/route?sll=54.97,-1.61&saddr=Start&dll=54.971118,-1.617628&daddr=Heron_Foods&type=vehicle");
+  assert.equal(route.ok, true);
+  assert.equal(route.provider, "CoMaps");
+  assert.equal(route.name, "Heron Foods");
+  assert.equal(route.lat, 54.971118);
+  assert.equal(route.lon, -1.617628);
+
+  // CoMaps web page Copy-as DMS & Decimal lines
+  const dms = parseDestination(`DMS: 54° 58' 16.03" N, 1° 37' 3.46" W`);
+  assert.equal(dms.ok, true);
+  assert.ok(Math.abs(dms.lat - 54.971119) < 0.00005 && Math.abs(dms.lon - -1.617628) < 0.00005);
+
+  const dec = parseDestination("Decimal: 54.971118, -1.617628");
+  assert.equal(dec.ok, true);
+  assert.equal(dec.lat, 54.971118);
+  assert.equal(dec.lon, -1.617628);
+
+  // Organic Maps omaps.app uses the same ge0 codec
+  const omaps = parseDestination("https://omaps.app/4tfxZ6WK7g/Heron_Foods");
+  assert.equal(omaps.ok, true);
+  assert.equal(omaps.provider, "Organic Maps");
+  assert.equal(omaps.lat.toFixed(6), "54.971118");
+});
+
 test("a shared title and the original short URL are available to the preview", () => {
   const result = parseDestination(`Harbour Bar\n${google}`);
   assert.equal(result.ok, false);

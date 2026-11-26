@@ -9,14 +9,15 @@ media metadata.</p>
 ## Use
 
 1. Connect your phone to CLIOPLAY Bluetooth and open this app.
-2. In the **Send** tab, paste Google Maps, Apple Maps, Waze or OpenStreetMap
-   destination links, or tap **Coords** to enter latitude and longitude (decimal
-   or DMS). Check the detected destination card.
+2. In the **Send** tab, paste Google Maps, Apple Maps, CoMaps, Waze or
+   OpenStreetMap destination links, or tap **Coords** to enter latitude and
+   longitude (decimal or DMS). Check the detected destination card.
 3. Choose **Route as new** or **Add as stop**, then tap **Send to ClioPlay**.
 
-OpenStreetMap (`osm.org/go/…`), Waze geohash (`waze.com/ul/h…`), Firebase
-dynamic Google links (`maps.app.goo.gl/?link=…`), and wrapped consent links
-decode locally, including offline. For shortened Google Maps (`maps.app.goo.gl`,
+CoMaps (`comaps.at/…`, `cm://`, `ge0://`, `/map`, `/route`, plus Organic Maps
+`omaps.app/…`), OpenStreetMap (`osm.org/go/…`), Waze geohash (`waze.com/ul/h…`),
+Firebase dynamic Google links (`maps.app.goo.gl/?link=…`), and wrapped consent
+links decode locally, including offline. For shortened Google Maps (`maps.app.goo.gl`,
 `goo.gl/maps`, `share.google`, `g.page`, `?cid=` / `?ftid=`), Apple Maps
 (`maps.apple/p/…`), and non-geohash Waze (`waze.com/ul/…`) links, ClioPlay Send
 expands them automatically when a resolver is configured (this can be switched

@@ -1,4 +1,4 @@
-const CACHE = "clioplay-send-20261126-3";
+const CACHE = "clioplay-send-20261126-4";
 const OWNED_PREFIX = "clioplay-send-";
 const ASSETS = [
   "./", "./index.html", "./styles.css", "./app.js", "./parser.js", "./places-store.js",

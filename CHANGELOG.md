@@ -1,5 +1,14 @@
 # Sender changes
 
+## 26 November 2026 — Complete offline CoMaps support
+
+- Added full **CoMaps** support (`parser.js`, `index.html`, `README.md`), decoding 100% offline with zero network calls:
+  - Short share links (`https://comaps.at/<code>/<Name>`, scheme-less `comaps.at/…`, plus `cm://` and `ge0://` deep links, and Organic Maps `omaps.app/…`) using the exact `ge0` 30-bit Base64 coordinate codec.
+  - Multi-line CoMaps app shares (`Check out\n<Name>\n...`) with automatic skipping of the `"Check out"` boilerplate line when a link has no URL name slug.
+  - CoMaps `/map?v=1&ll=…&n=…` pin links (with multi-location ambiguity protection) and `/route?sll=…&dll=…&daddr=…` destination links.
+  - CoMaps web-page copied coordinate lines (`DMS: 54° 58' 16.03" N, 1° 37' 3.46" W` and `Decimal: 54.971118, -1.617628`).
+- Bumped module asset query versions (`?v=20261126-4`) and service worker cache (`clioplay-send-20261126-4`).
+
 ## 26 November 2026 — Companion app redesign & bulletproof short-link resolver
 
 - **Companion app UX (`index.html`, `styles.css`, `app.js`, `manifest.webmanifest`):**

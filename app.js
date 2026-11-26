@@ -1,10 +1,10 @@
-import { parseDestination, buildPacket, sanitiseAvrcpName, validCoords } from "./parser.js?v=20261126";
+import { parseDestination, buildPacket, sanitiseAvrcpName, validCoords } from "./parser.js?v=20261126-4";
 import { expandMapLink } from "./short-links.js?v=20261126";
 import {
   RECENT_KEY, SAVED_KEY, RECENT_MAX, SAVED_MAX,
   storageAvailable, loadPlaces, recordRecent, clearRecents,
   findSavedIndex, savePlace, removeSavedPlace
-} from "./places-store.js?v=20261126";
+} from "./places-store.js?v=20261126-4";
 
 const resolverEndpoint = document.querySelector('meta[name="map-link-resolver"]')?.content.trim();
 const $ = id => document.getElementById(id);

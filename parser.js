@@ -36,15 +36,16 @@ function toCoords(match) {
 
 function coordinateQuery(value) {
   // A street address such as "50,52 Crossley Terrace" is not a coordinate pair.
-  const match = safeDecode(value || "").trim().match(STRICT_COORD_PAIR);
+  const cleaned = safeDecode(value || "").trim().replace(/^(?:decimal|coords?|coordinates?)\s*:\s*/i, "");
+  const match = cleaned.match(STRICT_COORD_PAIR);
   return toCoords(match);
 }
 
 function parseDmsCoords(value) {
   if (!value) return null;
-  const text = safeDecode(value).trim();
+  const text = safeDecode(value).trim().replace(/^dms\s*:\s*/i, "");
   const dms = text.match(
-    /^(\d{1,2})\s*°\s*(\d{1,2})?\s*(?:['′]\s*(\d{1,2}(?:\.\d+)?)\s*(?:["″]|'')?)?\s*([NS])[\s,;]+(\d{1,3})\s*°\s*(\d{1,2})?\s*(?:['′]\s*(\d{1,2}(?:\.\d+)?)\s*(?:["″]|'')?)?\s*([EW])$/i
+    /^(\d{1,2})\s*°\s*(\d{1,2})?\s*(?:['′’]\s*(\d{1,2}(?:\.\d+)?)\s*(?:["″”]|'')?)?\s*([NS])[\s,;]+(\d{1,3})\s*°\s*(\d{1,2})?\s*(?:['′’]\s*(\d{1,2}(?:\.\d+)?)\s*(?:["″”]|'')?)?\s*([EW])$/i
   );
   if (dms) {
     const latDeg = Number(dms[1]), latMin = Number(dms[2] || 0), latSec = Number(dms[3] || 0);
@@ -79,6 +80,8 @@ function extractUrl(text) {
   }
   const geo = text.match(/geo:-?\d+(?:\.\d+)?,-?\d+(?:\.\d+)?[^\s]*/i);
   if (geo) return geo[0].replace(/[.;]+$/, "");
+  const comapsScheme = text.match(/(?:cm|ge0):\/\/[^\s<>"\[\]]+/i);
+  if (comapsScheme) return comapsScheme[0].replace(/[.,;]+$/, "");
   // Apostrophes are valid URL characters: cutting at Kareem's loses the pin.
   // Prefer a Markdown link target over its label, which may itself be a URL.
   const markdown = text.match(/\]\(\s*<?(?=https?:\/\/)/i);
@@ -86,7 +89,7 @@ function extractUrl(text) {
   const match = text.slice(start).match(/https?:\/\/[^\s<>"\[\]]+/i);
   if (!match) {
     const bare = text.match(
-      /(?:^|[\s(<"'])((?:maps\.app\.goo\.gl|share\.google|(?:www\.)?goo\.gl\/maps|(?:www\.)?g\.page|maps\.apple(?:\.com)?|(?:www\.|ul\.)?waze\.com|(?:www\.)?(?:osm\.org|openstreetmap\.org))\/[^\s<>"\[\]]*)/i
+      /(?:^|[\s(<"'])((?:maps\.app\.goo\.gl|share\.google|(?:www\.)?goo\.gl\/maps|(?:www\.)?g\.page|maps\.apple(?:\.com)?|(?:www\.|ul\.)?waze\.com|(?:www\.)?comaps\.at|(?:www\.)?omaps\.app|(?:www\.)?(?:osm\.org|openstreetmap\.org))\/[^\s<>"\[\]]*)/i
     );
     if (!bare) return "";
     return ("https://" + bare[1]).replace(/[.,;)\]]+$/, "");
@@ -105,7 +108,8 @@ function extractUrl(text) {
 
 function sharedName(text, url) {
   for (const line of text.split(/\r?\n/).map(s => s.trim()).filter(Boolean)) {
-    if (line === url || /^https?:\/\//i.test(line) || /^geo:/i.test(line)) continue;
+    if (line === url || /^(?:https?|geo|ge0|cm):/i.test(line)) continue;
+    if (/^check out[:!\s]*$/i.test(line)) continue;
     if (coordinateQuery(line) || parseDmsCoords(line)) continue;
     if (line.length <= 100) return tidyName(line);
   }
@@ -122,6 +126,8 @@ function provider(host) {
       isGoogleDomain(h) || isConsentGoogleDomain(h)) {
     return "Google Maps";
   }
+  if (h === "comaps.at" || h === "www.comaps.at") return "CoMaps";
+  if (h === "omaps.app" || h === "www.omaps.app") return "Organic Maps";
   if (h === "waze.com" || h.endsWith(".waze.com")) return "Waze";
   if (h === "openstreetmap.org" || h.endsWith(".openstreetmap.org") || h === "osm.org" || h.endsWith(".osm.org")) {
     return "OpenStreetMap";
@@ -324,6 +330,63 @@ function wazeParse(u) {
   return { ...coords, name, confidence };
 }
 
+function decodeGe0(code) {
+  if (!/^[A-Za-z0-9_-]{5,11}$/.test(code)) return null;
+  const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_";
+  if (alphabet.indexOf(code[0]) < 0) return null;
+  const maxBytes = Math.min(code.length - 1, 10);
+  let lat = 0, lon = 0, shift = 27;
+  for (let i = 1; i <= maxBytes; i++) {
+    const a = alphabet.indexOf(code[i]);
+    if (a < 0) return null;
+    const lat1 = ((a >> 5) & 1) * 4 + ((a >> 3) & 1) * 2 + ((a >> 1) & 1);
+    const lon1 = ((a >> 4) & 1) * 4 + ((a >> 2) & 1) * 2 + (a & 1);
+    lat |= lat1 << shift;
+    lon |= lon1 << shift;
+    shift -= 3;
+  }
+  const middle = 1 << (30 - 3 * maxBytes);
+  lat += middle / 2;
+  lon += middle / 2;
+  const dlat = (lat / ((1 << 30) - 1)) * 180 - 90;
+  const dlon = (lon / (1 << 30)) * 360 - 180;
+  return validCoords(dlat, dlon) ? { lat: dlat, lon: dlon } : null;
+}
+
+function comapsParse(u, label = "CoMaps") {
+  const path = u.pathname.replace(/\/+$/, "") || "/";
+  if (path === "/route") {
+    const coords = coordinateQuery(u.searchParams.get("dll"));
+    if (!coords) return null;
+    return { ...coords, name: tidyName(u.searchParams.get("daddr") || ""), confidence: "exact" };
+  }
+  if (path === "/map") {
+    const unique = new Map();
+    for (const rawLl of u.searchParams.getAll("ll")) {
+      const point = coordinateQuery(rawLl);
+      if (!point) return null;
+      unique.set(`${point.lat},${point.lon}`, point);
+    }
+    if (unique.size > 1) {
+      return { error: `This ${label} link contains more than one location. Share a single place or pin.` };
+    }
+    if (unique.size === 1) {
+      return { ...unique.values().next().value, name: tidyName(u.searchParams.get("n") || ""), confidence: "exact" };
+    }
+    return null;
+  }
+  const parts = u.pathname.split("/").filter(Boolean);
+  const code = parts[0] || "";
+  const coords = decodeGe0(code);
+  if (!coords) return null;
+  let name = "";
+  if (parts.length > 1) {
+    const rawSlug = parts.slice(1).join(" / ");
+    if (!coordinateQuery(rawSlug) && !parseDmsCoords(rawSlug)) name = tidyName(rawSlug);
+  }
+  return { ...coords, name, confidence: code.length >= 8 ? "exact" : "map-center" };
+}
+
 function osmParse(u) {
   const mlat = u.searchParams.get("mlat"), mlon = u.searchParams.get("mlon");
   if (mlat !== null && mlon !== null) {
@@ -387,8 +450,15 @@ export function parseDestination(input) {
   }
 
   let u;
-  try { u = new URL(urlText); }
-  catch { return { ok: false, error: "That map link is not valid." }; }
+  const cmOrGe0 = urlText.match(/^(cm|ge0):\/\/(.*)$/i);
+  if (cmOrGe0) {
+    // Preserve exact Base64 casing of the ge0 code by parsing it as a path segment.
+    try { u = new URL("https://comaps.at/" + cmOrGe0[2].replace(/^\/+/, "")); }
+    catch { return { ok: false, error: "That CoMaps link is not valid." }; }
+  } else {
+    try { u = new URL(urlText); }
+    catch { return { ok: false, error: "That map link is not valid." }; }
+  }
 
   // Unwrap Google consent walls, redirect wrappers, or Firebase dynamic map links locally.
   for (let i = 0; i < 2; i++) {
@@ -414,6 +484,7 @@ export function parseDestination(input) {
   let parsed;
   if (source === "Google Maps") parsed = googleParse(u);
   else if (source === "Apple Maps") parsed = appleParse(u);
+  else if (source === "CoMaps" || source === "Organic Maps") parsed = comapsParse(u, source);
   else if (source === "Waze") parsed = wazeParse(u);
   else if (source === "OpenStreetMap") parsed = u.pathname.startsWith("/go/") ? osmShortParse(u) : osmParse(u);
   else parsed = genericParse(u);

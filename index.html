@@ -102,7 +102,7 @@
               <span>Paste</span>
             </button>
           </div>
-          <textarea id="destinationInput" rows="2" spellcheck="false" autocomplete="off" placeholder="Paste Google, Apple, Waze, OSM link or 51.5074, -0.1278"></textarea>
+          <textarea id="destinationInput" rows="2" spellcheck="false" autocomplete="off" placeholder="Paste Google, Apple, CoMaps, Waze, OSM link or 51.5074, -0.1278"></textarea>
 
           <div class="status-row">
             <span id="expandSpinner" class="spinner" aria-hidden="true" hidden></span>
@@ -289,6 +289,10 @@
               <span><code>maps.apple.com</code>, <code>maps.apple</code>, <code>maps.apple/p/…</code></span>
             </li>
             <li>
+              <strong>CoMaps</strong>
+              <span><code>comaps.at/…</code> (offline), <code>cm://</code>, <code>ge0://</code>, map &amp; route links</span>
+            </li>
+            <li>
               <strong>Waze</strong>
               <span><code>waze.com/ul/h…</code> (offline), <code>waze.com/ul/…</code>, Live Map</span>
             </li>
@@ -357,7 +361,7 @@
   </div>
 
   <audio id="txAudio" preload="auto" playsinline></audio>
-  <script type="module" src="./app.js?v=20261126"></script>
+  <script type="module" src="./app.js?v=20261126-4"></script>
   <script type="module" src="./release-notice.js?v=20261123"></script>
 </body>
 </html>
