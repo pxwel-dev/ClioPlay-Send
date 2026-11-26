@@ -1,5 +1,9 @@
 # Sender changes
 
+## 26 November 2026 — ClioPlay 2.2.7 announcement
+
+- Update the release announcement notice (`release.json`) to **ClioPlay v2.2.7** covering the camera system overhaul (matching upcoming-camera map markers, flush 43 px frosted-glass camera card with capsule progress bar and synced red overspeed rim, speed-scaled detection and average-speed fixes, and two-tier `Overspeed audio`).
+
 ## 25 November 2026 — ClioPlay 2.2.6.3 announcement
 
 - Update the release announcement notice (`release.json`) to **ClioPlay v2.2.6.3** covering the FAT32/exFAT SD-card install/update fixes, Windows WSL `venv` + `ensurepip` preflight, opt-in parallel atlas builder (`CLIOPLAY_PIPELINE=1`) and cached C++ build helpers.

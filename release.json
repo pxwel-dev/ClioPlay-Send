@@ -1,16 +1,12 @@
 {
-  "version": "2.2.6.3",
-  "title": "Installer, map-builder & routing update",
+  "version": "2.2.7",
+  "title": "Camera system overhaul",
   "features": [
-    "Installer & Windows WSL fixes (2.2.6.3): FAT32/exFAT SD-card installs and --update no longer abort on chmod EPERM, and the WSL launcher now verifies venv + ensurepip up front. Head-unit runtime is unchanged from 2.2.6.2.",
-    "Faster map building (2.2.6.3): opt-in parallel atlas builds (CLIOPLAY_PIPELINE=1) across Linux, WSL 2 and macOS with deterministic splits and fail-fast cancellation, plus private per-user caching of C++ build helpers.",
-    "Eliminated unnecessary U-turn spurs (2.2.6.2): two-way streets now pick the right direction at start and destination, and bounded cleanup bypasses remaining turn-restricted spurs and sharp reversals without breaking needed U-turns.",
-    "Simpler routes with fewer turns (2.2.6.2): tight multi-turn side-street zigzags are replaced with straighter legal main roads when added travel time stays small (within 20%, capped at 30 s per leg) with true driving-time ETA.",
-    "Close-up Z6–Z9 road alignment & parked snap release (2.2.6.1–2.2.6.2): keeps the vehicle marker and route start centred on roads using existing Z6 geometry, and smoothly eases back to GPS after parking off-road.",
-    "Unguided local ML learning: Preferred Nearby POIs, Usual Parking (including habitual car parks with no saved places nearby), POI-named stops/predictions and Usual Route shortcuts learn without an active route.",
-    "Unguided commute alerts & predictions: Likely traffic, Frequent slowdown and Cold-weather slowdown cues warn without a route (with dynamic hazard decay/expiry), alongside weekday/weekend weighting and aligned Adaptive Auto-zoom.",
-    "Live expandable GPS HUD inside the top clock pill (HH:MM:SS seconds, compass dial, accuracy, satellites, altitude and coordinates) toggled by double-OK or REPEAT, plus Z9–Z4 Auto zoom and tighter Explore diversion framing."
+    "Matching upcoming-camera map markers: crisp supersampled icons for Speed, Red-light and Average-speed cameras appear on the map for the upcoming camera (or average-zone exit) and turn red when over the limit.",
+    "Sleek flush 43 px camera card: aligned with the Speed and Turn pills, with matching icons, clean limit readouts, a BT-CTRL-style capsule progress bar and a synced pulsing red overspeed rim.",
+    "Smarter detection & reliability: speed-scaled warning and chime horizons, curved-road unguided matching, high-speed 1 Hz average-speed entry, along-route zone distance with slip-road auto-clear, and exact overspeed parity.",
+    "Two-tier chimes & Overspeed audio: distinct approach vs overspeed Bluetooth audio cues, plus a new Overspeed audio mode (quiet when compliant on speed/average cameras; soft cue only for red-light cameras)."
   ],
-  "releaseUrl": "https://github.com/pxwel-dev/ClioPlay/releases/tag/v2.2.6.3",
+  "releaseUrl": "https://github.com/pxwel-dev/ClioPlay/releases/tag/v2.2.7",
   "updateUrl": "https://github.com/pxwel-dev/ClioPlay/blob/main/src/docs/updating.md"
 }
