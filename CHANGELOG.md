@@ -1,5 +1,18 @@
 # Sender changes
 
+## 26 November 2026 — Multi-stop trip builder, My Location / Where I Parked & iPhone Share Sheet
+
+- **Multi-stop Trip Builder (`trip-store.js`, `app.js`, `index.html`, `styles.css`):**
+  - Queue up to 10 stops (matching ClioPlay's `TRIP_MAX_TARGETS`) from the destination card (`+ Add to multi-stop trip`), from any Saved/Recent/Parked place (`+`), or via `&trip=1` share URLs, with `↑`/`↓` reordering and on-device persistence.
+  - Transmit the entire itinerary in a single continuous Bluetooth audio session (final destination as `CLP2:N`, then stops in forward order as `CLP2:S` to match `clio040.c`'s `trip_add_stop()` insertion order) with live step highlights, progress bar, countdown, and cancel support.
+- **My Location & Where I Parked (`navigator.geolocation`):**
+  - Added a **Locate** pill in the **Send** header to grab your current GPS fix (±m accuracy) directly into the composer.
+  - Added a **Where I Parked** card in **Places** (with 1-tap **Park here**, saved timestamp/accuracy, **Load**, **+ Trip**, and **Clear**) plus a pinned **Parked car** quick chip on **Send**.
+- **iPhone Share Sheet integration (`parser.js`, `app.js`, `index.html`):**
+  - Extended URL query handling (`parseShareParams`) to support `?text=`, `?url=`, `?q=`, direct `?lat=&lon=` (`lng=` alias) + `?name=`, `&action=stop|new`, and `&trip=1` / `&add=trip`.
+  - Added an **iPhone Share Sheet (Apple Shortcut)** 4-step setup card with a 1-tap **Copy URL** button in **Settings**.
+- Added `./trip-store.js` to [sw.js](sw.js) precache, bumped asset versions & cache (`clioplay-send-20261126-5`), and added `tests/trip-and-share.test.mjs`.
+
 ## 26 November 2026 — Complete offline CoMaps support
 
 - Added full **CoMaps** support (`parser.js`, `index.html`, `README.md`), decoding 100% offline with zero network calls:

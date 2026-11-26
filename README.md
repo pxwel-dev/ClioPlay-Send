@@ -37,6 +37,32 @@ pauses during transmission and may need to be resumed. The phone's success
 message reports completion of the send window; the protocol has no head-unit
 acknowledgement. Check the destination on the head unit.
 
+### Multi-stop trip builder
+
+Queue up to **10 stops** (matching ClioPlay's head-unit itinerary limit) directly
+from the **Destination** card (**Add to multi-stop trip**), from **Places**
+(**+** on any saved, recent, or parked entry), or from an iPhone Shortcut with
+`&trip=1`. Reorder stops with `↑`/`↓` and tap **Send Trip to ClioPlay** to
+transmit the complete itinerary in one continuous Bluetooth media session
+(sending the final destination first as `CLP2:N`, followed by each intermediate
+stop in forward order as `CLP2:S`).
+
+### My Location & Where I Parked
+
+- Tap **Locate** in the **Send** header to drop your phone's current GPS pin
+  into the composer.
+- In the **Places** tab, tap **Park here** on the **Where I Parked** card to
+  save your current GPS spot (with timestamp and accuracy) on-device, and pin a
+  one-tap **Parked car** shortcut chip on the **Send** screen.
+
+### iPhone Share Sheet (Apple Shortcut)
+
+Android installs support the native Share Sheet via `share_target`. On iPhone,
+open **Settings → iPhone Share Sheet (Apple Shortcut)** to copy the base URL
+(`?text=`) and build a 2-action Apple Shortcut (**URL Encode** → **Open URLs**).
+URL query parameters also accept `?lat=…&lon=…&name=…`, `&action=stop`, and
+`&trip=1` for dedicated stop or trip shortcuts.
+
 ### Saved places and recent sends
 
 When browser storage is available, ClioPlay Send keeps an on-device list of

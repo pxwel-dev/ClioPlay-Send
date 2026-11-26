@@ -14,7 +14,7 @@
   <link rel="apple-touch-icon" href="./icons/apple-touch-icon.png?v=20261126-2">
   <link rel="icon" type="image/svg+xml" href="./icons/icon.svg?v=20261126-2">
   <link rel="icon" type="image/png" sizes="192x192" href="./icons/icon-192.png?v=20261126-2">
-  <link rel="stylesheet" href="./styles.css?v=20261126-3">
+  <link rel="stylesheet" href="./styles.css?v=20261126-5">
   <title>ClioPlay Send</title>
 </head>
 <body>
@@ -82,10 +82,13 @@
         <div class="view-header">
           <h1 id="sendHeading" tabindex="-1">Send Destination</h1>
           <div class="view-header-actions">
-            <button id="manualCoordsToggle" class="chip-button" type="button" aria-expanded="false" aria-controls="manualCoordsPanel">
+            <button id="locateButton" class="chip-button" type="button" title="Use your phone's current GPS location">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                 <circle cx="12" cy="12" r="3"/><path d="M12 2v3m0 14v3M2 12h3m14 0h3"/>
               </svg>
+              <span>Locate</span>
+            </button>
+            <button id="manualCoordsToggle" class="chip-button" type="button" aria-expanded="false" aria-controls="manualCoordsPanel">
               <span>Coords</span>
             </button>
             <button id="clearInputButton" class="chip-button chip-danger" type="button" hidden>Clear</button>
@@ -166,6 +169,44 @@
             </span>
             <input id="nameInput" maxlength="80" autocomplete="off" placeholder="Phone destination">
           </label>
+
+          <div class="dest-card-footer">
+            <button id="addToTripButton" class="pill-action dest-trip-btn" type="button">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M12 5v14M5 12h14"/>
+              </svg>
+              <span id="addToTripLabel">Add to multi-stop trip</span>
+            </button>
+          </div>
+        </section>
+
+        <section id="tripCard" class="surface trip-card" aria-labelledby="tripHeading" hidden>
+          <div class="trip-header">
+            <div class="trip-title-wrap">
+              <h2 id="tripHeading">Trip Queue</h2>
+              <span id="tripCountPill" class="value-pill">0 / 10</span>
+            </div>
+            <button id="clearTripButton" class="chip-button chip-danger" type="button">Clear</button>
+          </div>
+          <ol id="tripList" class="trip-list"></ol>
+          <div class="trip-send-wrap">
+            <button id="sendTripButton" class="send-button send-button-trip" type="button" disabled>
+              <span class="send-icon" id="tripSendIcon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M22 2 11 13M22 2l-7 20-4-9-9-4 20-7Z"/>
+                </svg>
+              </span>
+              <span class="send-copy">
+                <strong id="tripSendLabel">Send Trip to ClioPlay</strong>
+                <small id="tripSendSubtext">Add stops to build a trip</small>
+              </span>
+              <span id="tripDurationBadge" class="send-duration-badge">0s</span>
+              <span class="send-progress" aria-hidden="true">
+                <span id="tripProgressFill" class="send-progress-fill"></span>
+              </span>
+            </button>
+            <button id="cancelTripButton" class="cancel-trip-button" type="button" hidden>Cancel trip transfer</button>
+          </div>
         </section>
 
         <section class="action-section" aria-labelledby="actionLabel">
@@ -222,6 +263,26 @@
           <h2>Places</h2>
           <button id="clearRecentsButton" class="chip-button chip-danger" type="button" hidden>Clear recent</button>
         </div>
+
+        <section id="parkedCard" class="surface parked-card" aria-label="Where I parked">
+          <div class="parked-top">
+            <div class="parked-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="4" y="4" width="16" height="16" rx="4"/><path d="M10 16V8h3a2.5 2.5 0 0 1 0 5h-3"/>
+              </svg>
+            </div>
+            <div class="parked-copy">
+              <strong id="parkedTitle">Where I Parked</strong>
+              <small id="parkedMeta">Save your current GPS location when you park.</small>
+            </div>
+          </div>
+          <div class="parked-actions">
+            <button id="parkHereButton" class="pill-action pill-action-primary" type="button">Park here</button>
+            <button id="loadParkedButton" class="pill-action" type="button" hidden>Load</button>
+            <button id="addParkedToTripButton" class="pill-action" type="button" hidden>+ Trip</button>
+            <button id="clearParkedButton" class="pill-action pill-action-danger" type="button" hidden>Clear</button>
+          </div>
+        </section>
 
         <div id="placesCard" class="places-view-body">
           <div class="segmented-bar" role="tablist" aria-label="Places filter">
@@ -307,6 +368,24 @@
           </ul>
         </section>
 
+        <section id="iosShortcutGroup" class="surface settings-group" aria-labelledby="settingsIosTitle">
+          <div class="settings-head">
+            <h3 id="settingsIosTitle">iPhone Share Sheet (Apple Shortcut)</h3>
+            <span class="value-pill">iOS</span>
+          </div>
+          <p class="settings-note">Share straight from CoMaps, Apple Maps, Google Maps or Waze on iPhone with a 2-action Apple Shortcut:</p>
+          <ol class="shortcut-steps">
+            <li>Open <strong>Shortcuts</strong> → tap <strong>+</strong> → name it <strong>Send to ClioPlay</strong>.</li>
+            <li>Tap <strong>ⓘ</strong> (Details) → enable <strong>Show in Share Sheet</strong> (URLs &amp; Text).</li>
+            <li>Add <strong>URL Encode</strong> (<em>Shortcut Input</em>), then <strong>Open URLs</strong> set to the link below + <em>URL Encoded Text</em>.</li>
+            <li>Optional: append <code>&amp;action=stop</code> or <code>&amp;trip=1</code> for quick stop / trip shortcuts.</li>
+          </ol>
+          <div class="shortcut-url-bar">
+            <code id="shortcutUrlPreview" class="shortcut-url-code"></code>
+            <button id="copyShortcutUrlButton" class="pill-action pill-action-primary" type="button">Copy URL</button>
+          </div>
+        </section>
+
         <section class="surface settings-group" aria-labelledby="settingsAppTitle">
           <h3 id="settingsAppTitle">App &amp; ClioPlay head unit</h3>
           <div id="settingsInstallRow" class="settings-action-row">
@@ -361,7 +440,7 @@
   </div>
 
   <audio id="txAudio" preload="auto" playsinline></audio>
-  <script type="module" src="./app.js?v=20261126-4"></script>
+  <script type="module" src="./app.js?v=20261126-5"></script>
   <script type="module" src="./release-notice.js?v=20261123"></script>
 </body>
 </html>

@@ -543,6 +543,43 @@ function crc16Ccitt(text) {
   return crc & 0xffff;
 }
 
+export function parseShareParams(search) {
+  const params = search instanceof URLSearchParams ? search : new URLSearchParams(String(search || ""));
+  const rawAction = (params.get("action") || "").trim().toLowerCase();
+  const action = (rawAction === "s" || rawAction === "stop" || rawAction === "add-stop")
+    ? "S"
+    : (rawAction === "n" || rawAction === "new" || rawAction === "route")
+      ? "N"
+      : "";
+  const rawTrip = (params.get("trip") || "").trim().toLowerCase();
+  const rawAdd = (params.get("add") || "").trim().toLowerCase();
+  const addToTrip = rawTrip === "1" || rawTrip === "true" || rawAdd === "trip";
+
+  const latText = params.get("lat");
+  const lonText = params.get("lon") ?? params.get("lng");
+  if (latText !== null && lonText !== null && latText.trim() && lonText.trim()) {
+    const lat = Number(latText), lon = Number(lonText);
+    if (validCoords(lat, lon)) {
+      const name = tidyName(params.get("name") || params.get("title") || "");
+      return {
+        kind: "coords",
+        lat,
+        lon,
+        name,
+        action,
+        addToTrip
+      };
+    }
+  }
+
+  const shared = [params.get("title"), params.get("text"), params.get("url"), params.get("q")]
+    .filter(Boolean)
+    .join("\n")
+    .trim();
+  if (!shared) return null;
+  return { kind: "text", text: shared, action, addToTrip };
+}
+
 export function buildPacket(lat, lon, name, sequence, action = "N") {
   if (!validCoords(lat, lon)) throw new Error("Invalid coordinates");
   const intent = action === "S" ? "S" : "N";

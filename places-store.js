@@ -1,4 +1,4 @@
-import { validCoords, sanitiseAvrcpName } from "./parser.js?v=20261126-4";
+import { validCoords, sanitiseAvrcpName } from "./parser.js?v=20261126-5";
 
 export const RECENT_KEY = "clp-recent-sends";
 export const SAVED_KEY = "clp-saved-places";
