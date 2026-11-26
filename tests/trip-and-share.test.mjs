@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { parseShareParams } from "../parser.js";
 import {
-  TRIP_MAX, loadTrip, addTripStop, removeTripStop, moveTripStop, clearTrip,
+  TRIP_MAX, loadTrip, addTripStop, removeTripStop, moveTripStop, saveTrip, clearTrip,
   buildTripPackets, loadParkedSpot, saveParkedSpot, clearParkedSpot
 } from "../trip-store.js";
 
@@ -45,6 +45,14 @@ test("trip-store adds, reorders, removes, clears, and caps at TRIP_MAX (10)", ()
 
   assert.deepEqual(clearTrip(store), []);
   assert.deepEqual(loadTrip(store), []);
+
+  // saveTrip persists an arbitrary reordered list directly
+  const savedDirect = saveTrip(store, [
+    { name: "Home", lat: 54.9912, lon: -1.59 },
+    { name: "Heron Foods", lat: 54.971118, lon: -1.617628 }
+  ]);
+  assert.deepEqual(savedDirect.map(s => s.name), ["Home", "Heron Foods"]);
+  assert.deepEqual(loadTrip(store).map(s => s.name), ["Home", "Heron Foods"]);
 });
 
 test("buildTripPackets matches ClioPlay clio040.c set_destination + trip_add_stop order", () => {

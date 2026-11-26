@@ -71,6 +71,12 @@ export function moveTripStop(storage, index, delta) {
   return next;
 }
 
+export function saveTrip(storage, stops) {
+  const clean = Array.isArray(stops) ? stops.map(normaliseStop).filter(Boolean).slice(0, TRIP_MAX) : [];
+  writeJson(storage, TRIP_KEY, clean.length ? clean : null);
+  return clean;
+}
+
 export function clearTrip(storage) {
   writeJson(storage, TRIP_KEY, null);
   return [];

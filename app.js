@@ -6,9 +6,9 @@ import {
   findSavedIndex, savePlace, removeSavedPlace
 } from "./places-store.js?v=20261126-5";
 import {
-  TRIP_MAX, loadTrip, addTripStop, removeTripStop, moveTripStop, clearTrip,
+  TRIP_MAX, loadTrip, saveTrip, clearTrip,
   buildTripPackets, loadParkedSpot, saveParkedSpot, clearParkedSpot
-} from "./trip-store.js?v=20261126-5";
+} from "./trip-store.js?v=20261126-7";
 
 const resolverEndpoint = document.querySelector('meta[name="map-link-resolver"]')?.content.trim();
 const $ = id => document.getElementById(id);
@@ -128,6 +128,8 @@ let tripStepTimer = null;
 let activeTripSchedule = [];
 let activeTripStep = -1;
 let completedTripIndices = new Set();
+let lastMovedTripIndex = -1;
+let movedHighlightTimer = null;
 let toastTimer = null;
 let currentProvider = "Destination";
 let currentConfidence = "exact";
@@ -411,27 +413,55 @@ function renderQuickPlaces() {
   el.quickPlacesStrip.hidden = combined.length === 0;
 }
 
+function persistTrip() {
+  if (canStorePlaces) saveTrip(localStorage, tripStops);
+}
+
 function enqueueTripStop(stop, { clearComposer = false } = {}) {
   if (tripStops.length >= TRIP_MAX) {
     showToast(`Trip full (max ${TRIP_MAX} stops)`);
     return false;
   }
-  if (canStorePlaces) {
-    tripStops = addTripStop(localStorage, stop);
-  } else {
-    const lat = Number(stop.lat), lon = Number(stop.lon);
-    if (!validCoords(lat, lon)) return false;
-    tripStops = [...tripStops, {
-      name: sanitiseAvrcpName(stop.name || "Phone destination"),
-      lat: Number(lat.toFixed(6)),
-      lon: Number(lon.toFixed(6))
-    }];
-  }
+  const lat = Number(stop.lat), lon = Number(stop.lon);
+  if (!validCoords(lat, lon)) return false;
+  const clean = {
+    name: sanitiseAvrcpName(stop.name || "Phone destination"),
+    lat: Number(lat.toFixed(6)),
+    lon: Number(lon.toFixed(6))
+  };
+  tripStops = [...tripStops, clean];
+  persistTrip();
   if (clearComposer) clearAllInputs();
   renderTrip();
   updateAddToTripButton();
   showToast(`Added to trip (${tripStops.length} ${tripStops.length === 1 ? "stop" : "stops"})`);
   return true;
+}
+
+function moveStopBy(index, delta, focusAction = "") {
+  if (sending) return;
+  const target = index + delta;
+  if (index < 0 || index >= tripStops.length || target < 0 || target >= tripStops.length || index === target) return;
+  tripStops = moveInMemory(tripStops, index, delta);
+  persistTrip();
+  lastMovedTripIndex = target;
+  clearTimeout(movedHighlightTimer);
+  movedHighlightTimer = setTimeout(() => { lastMovedTripIndex = -1; }, 450);
+  vibrate(8);
+  renderTrip();
+  if (focusAction) {
+    const nextBtn = el.tripList.querySelector(`button[data-trip-index="${target}"][data-trip-action="${focusAction}"]`);
+    if (nextBtn && !nextBtn.disabled) nextBtn.focus({ preventScroll: true });
+    else el.tripList.querySelector(`li[data-trip-index="${target}"]`)?.focus({ preventScroll: true });
+  }
+}
+
+function removeStopAt(index) {
+  if (sending || index < 0 || index >= tripStops.length) return;
+  tripStops = tripStops.filter((_, idx) => idx !== index);
+  persistTrip();
+  renderTrip();
+  if (!currentCoords() && !el.destinationInput.value.trim()) setMessage(idleComposerPrompt());
 }
 
 function idleComposerPrompt() {
@@ -463,8 +493,11 @@ function renderTrip() {
     const isFinal = i === tripStops.length - 1;
     const li = document.createElement("li");
     li.className = "trip-row";
+    li.dataset.tripIndex = String(i);
+    li.tabIndex = 0;
     if (completedTripIndices.has(i)) li.classList.add("tx-done");
     else if (i === activeStopIndex) li.classList.add("tx-active");
+    else if (i === lastMovedTripIndex) li.classList.add("just-moved");
 
     const marker = document.createElement("span");
     marker.className = `trip-marker${isFinal ? " final" : ""}`;
@@ -484,39 +517,29 @@ function renderTrip() {
     const upBtn = document.createElement("button");
     upBtn.type = "button";
     upBtn.className = "trip-ctrl-btn";
+    upBtn.dataset.tripAction = "up";
+    upBtn.dataset.tripIndex = String(i);
     upBtn.innerHTML = ICONS.up;
     upBtn.disabled = sending || i === 0;
     upBtn.setAttribute("aria-label", `Move ${stop.name} up`);
-    upBtn.addEventListener("click", () => {
-      if (sending) return;
-      tripStops = canStorePlaces ? moveTripStop(localStorage, i, -1) : moveInMemory(tripStops, i, -1);
-      renderTrip();
-    });
 
     const downBtn = document.createElement("button");
     downBtn.type = "button";
     downBtn.className = "trip-ctrl-btn";
+    downBtn.dataset.tripAction = "down";
+    downBtn.dataset.tripIndex = String(i);
     downBtn.innerHTML = ICONS.down;
     downBtn.disabled = sending || isFinal;
     downBtn.setAttribute("aria-label", `Move ${stop.name} down`);
-    downBtn.addEventListener("click", () => {
-      if (sending) return;
-      tripStops = canStorePlaces ? moveTripStop(localStorage, i, 1) : moveInMemory(tripStops, i, 1);
-      renderTrip();
-    });
 
     const delBtn = document.createElement("button");
     delBtn.type = "button";
     delBtn.className = "trip-ctrl-btn danger";
+    delBtn.dataset.tripAction = "remove";
+    delBtn.dataset.tripIndex = String(i);
     delBtn.innerHTML = ICONS.close;
     delBtn.disabled = sending;
     delBtn.setAttribute("aria-label", `Remove ${stop.name} from trip`);
-    delBtn.addEventListener("click", () => {
-      if (sending) return;
-      tripStops = canStorePlaces ? removeTripStop(localStorage, i) : tripStops.filter((_, idx) => idx !== i);
-      renderTrip();
-      if (!currentCoords() && !el.destinationInput.value.trim()) setMessage(idleComposerPrompt());
-    });
 
     ctrls.append(upBtn, downBtn, delBtn);
     li.append(marker, copy, ctrls);
@@ -1285,6 +1308,26 @@ el.addToTripButton.addEventListener("click", () => {
   const coords = currentCoords();
   if (!coords || sending) return;
   enqueueTripStop({ name: el.nameInput.value.trim() || "Phone destination", lat: coords.lat, lon: coords.lon }, { clearComposer: true });
+});
+
+el.tripList.addEventListener("click", event => {
+  const btn = event.target.closest("button[data-trip-action]");
+  if (!btn || btn.disabled) return;
+  const idx = Number(btn.dataset.tripIndex);
+  const action = btn.dataset.tripAction;
+  if (action === "up") moveStopBy(idx, -1, "up");
+  else if (action === "down") moveStopBy(idx, 1, "down");
+  else if (action === "remove") removeStopAt(idx);
+});
+
+el.tripList.addEventListener("keydown", event => {
+  if (event.key !== "ArrowUp" && event.key !== "ArrowDown") return;
+  const row = event.target.closest("li[data-trip-index]");
+  if (!row) return;
+  event.preventDefault();
+  const idx = Number(row.dataset.tripIndex);
+  const delta = event.key === "ArrowUp" ? -1 : 1;
+  moveStopBy(idx, delta, event.key === "ArrowUp" ? "up" : "down");
 });
 
 el.clearTripButton.addEventListener("click", () => {

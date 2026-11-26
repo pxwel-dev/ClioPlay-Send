@@ -1461,6 +1461,16 @@ textarea:focus, input:focus {
   background: rgba(91, 224, 164, 0.08);
 }
 
+.trip-row.just-moved {
+  border-color: var(--cyan-line);
+  background: rgba(88, 214, 238, 0.09);
+}
+
+.trip-row:focus-visible {
+  outline: 2px solid var(--cyan);
+  outline-offset: 2px;
+}
+
 .trip-marker {
   flex: 0 0 28px;
   height: 28px;
@@ -1514,32 +1524,53 @@ textarea:focus, input:focus {
 .trip-row-controls {
   display: flex;
   align-items: center;
-  gap: 1px;
+  gap: 4px;
   flex: 0 0 auto;
 }
 
 .trip-ctrl-btn {
-  width: 26px;
-  height: 28px;
-  display: grid;
-  place-items: center;
-  border: 0;
-  border-radius: 8px;
-  background: transparent;
-  color: var(--muted);
+  flex: 0 0 32px;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  background: rgba(148, 179, 209, 0.07);
+  color: var(--text-soft);
+  transition: transform 0.1s ease, background 0.12s ease, border-color 0.12s ease, color 0.12s ease;
 }
 
 .trip-ctrl-btn svg {
-  width: 14px;
-  height: 14px;
+  width: 15px;
+  height: 15px;
+  pointer-events: none;
+  display: block;
+}
+
+.trip-ctrl-btn:hover:not(:disabled) {
+  border-color: var(--cyan-line);
+  background: var(--cyan-soft);
+  color: var(--cyan);
+}
+
+.trip-ctrl-btn:active:not(:disabled) {
+  transform: scale(0.92);
+  border-color: var(--cyan-line);
+  background: rgba(88, 214, 238, 0.22);
+  color: var(--cyan);
 }
 
 .trip-ctrl-btn:disabled {
-  opacity: 0.24;
+  opacity: 0.22;
   cursor: default;
 }
 
-.trip-ctrl-btn.danger:hover {
+.trip-ctrl-btn.danger:hover:not(:disabled),
+.trip-ctrl-btn.danger:active:not(:disabled) {
+  border-color: rgba(255, 133, 128, 0.4);
   color: var(--danger);
   background: var(--danger-soft);
 }
