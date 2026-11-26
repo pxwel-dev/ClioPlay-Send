@@ -73,15 +73,10 @@ const el = {
   tripCountPill: $("tripCountPill"),
   clearTripButton: $("clearTripButton"),
   tripList: $("tripList"),
-  sendTripButton: $("sendTripButton"),
-  tripSendIcon: $("tripSendIcon"),
-  tripSendLabel: $("tripSendLabel"),
-  tripSendSubtext: $("tripSendSubtext"),
-  tripDurationBadge: $("tripDurationBadge"),
-  tripProgressFill: $("tripProgressFill"),
   cancelTripButton: $("cancelTripButton"),
   latInput: $("latInput"),
   lonInput: $("lonInput"),
+  actionSection: $("actionSection"),
   routeNewButton: $("routeNewButton"),
   addStopButton: $("addStopButton"),
   sendButton: $("sendButton"),
@@ -209,16 +204,12 @@ function setTransferDuration(seconds, persist = true) {
   sendSeconds = ALLOWED_DURATIONS.includes(seconds) ? seconds : 4;
   if (persist) remember("clp-send-seconds", String(sendSeconds));
   el.durationValuePill.textContent = `${sendSeconds}s`;
-  el.sendDurationBadge.textContent = `${sendSeconds}s`;
   for (const btn of el.durationPills.querySelectorAll("[data-duration]")) {
     const selected = Number(btn.dataset.duration) === sendSeconds;
     btn.classList.toggle("selected", selected);
     btn.setAttribute("aria-checked", String(selected));
   }
-  if (!sending && currentCoords() && mediaSupported()) {
-    el.sendSubtext.textContent = `Ready · ${sendSeconds}s Bluetooth window`;
-  }
-  renderTrip();
+  updateSendDock();
 }
 
 function loadPreferences() {
@@ -276,9 +267,40 @@ function updateSaveButton(coords) {
 function updateAddToTripButton() {
   const full = tripStops.length >= TRIP_MAX;
   el.addToTripButton.disabled = sending || full;
+  el.addToTripButton.classList.toggle("primary", tripStops.length > 0 && !full);
   if (full) el.addToTripLabel.textContent = `Trip full (${TRIP_MAX} stops max)`;
-  else if (tripStops.length > 0) el.addToTripLabel.textContent = `Add to trip (${tripStops.length} queued)`;
-  else el.addToTripLabel.textContent = "Add to multi-stop trip";
+  else if (tripStops.length > 0) el.addToTripLabel.textContent = `Add as stop ${tripStops.length + 1}`;
+  else el.addToTripLabel.textContent = "Start multi-stop trip";
+}
+
+function updateSendDock() {
+  const isTripMode = tripStops.length > 0;
+  el.actionSection.hidden = isTripMode;
+  el.sendButton.classList.toggle("trip-mode", isTripMode);
+
+  if (sending || el.sendButton.classList.contains("sent")) return;
+
+  if (isTripMode) {
+    const totalSec = tripStops.length * sendSeconds;
+    el.sendDurationBadge.textContent = `${totalSec}s`;
+    el.sendButton.disabled = !mediaSupported();
+    el.sendLabel.textContent = tripStops.length === 1
+      ? "Send Trip to ClioPlay"
+      : `Send Trip (${tripStops.length} stops)`;
+    el.sendSubtext.textContent = !mediaSupported()
+      ? "Browser not supported"
+      : tripStops.length === 1
+        ? `Add more stops above or send now · ${totalSec}s`
+        : `${tripStops.length} stops · ${totalSec}s continuous transfer`;
+  } else {
+    const coords = currentCoords();
+    el.sendDurationBadge.textContent = `${sendSeconds}s`;
+    el.sendButton.disabled = !coords || !mediaSupported();
+    el.sendLabel.textContent = "Send to ClioPlay";
+    el.sendSubtext.textContent = !coords
+      ? "Choose a destination first"
+      : (mediaSupported() ? `Ready · ${sendSeconds}s Bluetooth window` : "Browser not supported");
+  }
 }
 
 function updateConfidenceBadge(confidence) {
@@ -363,18 +385,26 @@ function renderQuickPlaces() {
       }
     }
   }
+  const stripHeading = el.quickPlacesStrip.querySelector(".quick-strip-header span");
+  if (stripHeading) stripHeading.textContent = tripStops.length > 0 ? "Quick add to trip" : "Quick places";
   el.quickPlacesList.replaceChildren();
   for (const entry of combined) {
     const btn = document.createElement("button");
     btn.type = "button";
     btn.className = `quick-chip${entry.kind === "recent" ? " recent" : entry.kind === "parked" ? " parked" : ""}`;
-    btn.innerHTML = entry.kind === "parked" ? ICONS.park : entry.kind === "saved" ? ICONS.bookmark : ICONS.clock;
+    btn.innerHTML = tripStops.length > 0
+      ? ICONS.plus
+      : (entry.kind === "parked" ? ICONS.park : entry.kind === "saved" ? ICONS.bookmark : ICONS.clock);
     const span = document.createElement("span");
     span.textContent = entry.item.name;
     btn.appendChild(span);
     btn.addEventListener("click", () => {
-      const label = entry.kind === "parked" ? "Parked car" : entry.kind === "saved" ? "Saved place" : "Recent";
-      loadQuickPlace(entry.item, label);
+      if (tripStops.length > 0) {
+        enqueueTripStop({ name: entry.item.name, lat: entry.item.lat, lon: entry.item.lon });
+      } else {
+        const label = entry.kind === "parked" ? "Parked car" : entry.kind === "saved" ? "Saved place" : "Recent";
+        loadQuickPlace(entry.item, label);
+      }
     });
     el.quickPlacesList.appendChild(btn);
   }
@@ -404,10 +434,18 @@ function enqueueTripStop(stop, { clearComposer = false } = {}) {
   return true;
 }
 
+function idleComposerPrompt() {
+  return tripStops.length > 0
+    ? "Paste, locate, or tap a quick place to add another stop."
+    : "Paste a map link or coordinates to begin.";
+}
+
 function renderTrip() {
   updateAddToTripButton();
   if (!tripStops.length) {
     el.tripCard.hidden = true;
+    updateSendDock();
+    renderQuickPlaces();
     return;
   }
   el.tripCard.hidden = false;
@@ -477,6 +515,7 @@ function renderTrip() {
       if (sending) return;
       tripStops = canStorePlaces ? removeTripStop(localStorage, i) : tripStops.filter((_, idx) => idx !== i);
       renderTrip();
+      if (!currentCoords() && !el.destinationInput.value.trim()) setMessage(idleComposerPrompt());
     });
 
     ctrls.append(upBtn, downBtn, delBtn);
@@ -484,16 +523,8 @@ function renderTrip() {
     el.tripList.appendChild(li);
   }
 
-  const totalSec = tripStops.length * sendSeconds;
-  el.tripDurationBadge.textContent = `${totalSec}s`;
-  el.sendTripButton.disabled = sending || !mediaSupported();
-  if (!isTripSending && !el.sendTripButton.classList.contains("sent")) {
-    const labelCount = tripStops.length === 1 ? "1 destination" : `${tripStops.length} stops`;
-    el.tripSendLabel.textContent = "Send Trip to ClioPlay";
-    el.tripSendSubtext.textContent = mediaSupported()
-      ? `${labelCount} · ${totalSec}s continuous transfer`
-      : "Browser not supported";
-  }
+  updateSendDock();
+  renderQuickPlaces();
 }
 
 function moveInMemory(list, index, delta) {
@@ -654,8 +685,7 @@ function updateDestination(provider = currentProvider || "Destination") {
   if (!coords) {
     el.destinationCard.hidden = true;
     el.savePlaceButton.hidden = true;
-    el.sendButton.disabled = true;
-    el.sendSubtext.textContent = "Choose a destination first";
+    updateSendDock();
     renderQuickPlaces();
     return;
   }
@@ -668,12 +698,7 @@ function updateDestination(provider = currentProvider || "Destination") {
   updateNameCounter();
   updateSaveButton(coords);
   updateAddToTripButton();
-  el.sendButton.disabled = sending || !mediaSupported();
-  if (!sending) {
-    el.sendSubtext.textContent = mediaSupported()
-      ? `Ready · ${sendSeconds}s Bluetooth window`
-      : "Browser not supported";
-  }
+  updateSendDock();
   renderQuickPlaces();
 }
 
@@ -712,9 +737,8 @@ function clearDestination() {
   el.nameInput.value = "";
   el.destinationCard.hidden = true;
   el.savePlaceButton.hidden = true;
-  el.sendButton.disabled = true;
-  el.sendSubtext.textContent = "Choose a destination first";
   updateClearButton();
+  updateSendDock();
   renderQuickPlaces();
 }
 
@@ -736,7 +760,7 @@ function clearAllInputs() {
   el.destinationInput.value = "";
   autoResizeInput();
   clearDestination();
-  setMessage("Paste a map link or coordinates to begin.");
+  setMessage(idleComposerPrompt());
 }
 
 function parseInput() {
@@ -768,7 +792,7 @@ function parseInput() {
     setMessage(result.error, "error");
   } else {
     pendingAddToTripAfterExpand = false;
-    setMessage("Paste a map link or coordinates to begin.");
+    setMessage(idleComposerPrompt());
   }
 }
 
@@ -969,10 +993,10 @@ function advanceTripStep() {
   }
 
   const cur = activeTripSchedule[activeTripStep];
-  el.tripProgressFill.style.width = `${pct.toFixed(1)}%`;
-  el.tripSendLabel.textContent = `Sending ${activeTripStep + 1} of ${activeTripSchedule.length}…`;
+  el.sendProgressFill.style.width = `${pct.toFixed(1)}%`;
+  el.sendLabel.textContent = `Sending ${activeTripStep + 1} of ${activeTripSchedule.length}…`;
   const kindLabel = cur.action === "N" ? "Destination" : `Stop ${cur.stopIndex + 1}`;
-  el.tripSendSubtext.textContent = `${kindLabel}: ${cur.stop.name} · ${remaining}s`;
+  el.sendSubtext.textContent = `${kindLabel}: ${cur.stop.name} · ${remaining}s`;
   setBtStatus("sending", `${activeTripStep + 1}/${activeTripSchedule.length}`);
 }
 
@@ -999,9 +1023,8 @@ function showSentSingle() {
     el.sendButton.classList.remove("sent");
     el.sendProgressFill.style.width = "0%";
     el.sendIcon.innerHTML = ICONS.send;
-    el.sendLabel.textContent = "Send to ClioPlay";
     setBtStatus(mediaSupported() ? "ready" : "error", mediaSupported() ? "Ready" : "Unsupported");
-    updateDestination(currentProvider);
+    updateSendDock();
   }, 2400);
 }
 
@@ -1011,22 +1034,22 @@ function showSentTrip(count) {
   activeTripSchedule = [];
   activeTripStep = -1;
   el.cancelTripButton.hidden = true;
-  el.sendTripButton.classList.remove("sending");
-  el.sendTripButton.classList.add("sent");
-  el.tripProgressFill.style.width = "100%";
-  el.tripSendIcon.innerHTML = ICONS.check;
-  el.tripSendLabel.textContent = count === 1 ? "Destination sent" : `Trip sent (${count} stops)`;
-  el.tripSendSubtext.textContent = "Check your itinerary on ClioPlay";
+  el.sendButton.classList.remove("sending");
+  el.sendButton.classList.add("sent");
+  el.sendProgressFill.style.width = "100%";
+  el.sendIcon.innerHTML = ICONS.check;
+  el.sendButton.disabled = !mediaSupported();
+  el.sendLabel.textContent = count === 1 ? "Destination sent" : `Trip sent (${count} stops)`;
+  el.sendSubtext.textContent = "Check your itinerary on ClioPlay";
   setBtStatus("sent", "Sent");
   vibrate([14, 40, 14]);
   renderTrip();
-  updateDestination(currentProvider);
   clearTimeout(sentTimer);
   sentTimer = setTimeout(() => {
     completedTripIndices.clear();
-    el.sendTripButton.classList.remove("sent");
-    el.tripProgressFill.style.width = "0%";
-    el.tripSendIcon.innerHTML = ICONS.send;
+    el.sendButton.classList.remove("sent");
+    el.sendProgressFill.style.width = "0%";
+    el.sendIcon.innerHTML = ICONS.send;
     setBtStatus(mediaSupported() ? "ready" : "error", mediaSupported() ? "Ready" : "Unsupported");
     renderTrip();
   }, 2800);
@@ -1043,12 +1066,12 @@ function cancelTripTransfer() {
   activeTripStep = -1;
   completedTripIndices.clear();
   el.cancelTripButton.hidden = true;
-  el.sendTripButton.classList.remove("sending", "sent");
-  el.tripProgressFill.style.width = "0%";
-  el.tripSendIcon.innerHTML = ICONS.send;
+  el.sendButton.classList.remove("sending", "sent");
+  el.sendProgressFill.style.width = "0%";
+  el.sendIcon.innerHTML = ICONS.send;
   setBtStatus(mediaSupported() ? "ready" : "error", mediaSupported() ? "Ready" : "Unsupported");
   renderTrip();
-  updateDestination(currentProvider);
+  updateSendDock();
   showToast("Trip transfer cancelled");
 }
 
@@ -1072,7 +1095,6 @@ async function transmit() {
   el.txAudio.volume = 1;
 
   el.sendButton.disabled = true;
-  el.sendTripButton.disabled = true;
   el.sendIcon.innerHTML = ICONS.wave;
   el.sendLabel.textContent = sendAction === "S" ? "Sending stop…" : "Sending destination…";
   el.sendSubtext.textContent = `Keep phone connected · ${sendSeconds}s`;
@@ -1093,11 +1115,9 @@ async function transmit() {
     el.sendButton.classList.remove("sending");
     el.sendProgressFill.style.width = "0%";
     el.sendIcon.innerHTML = ICONS.send;
-    el.sendButton.disabled = !currentCoords() || !mediaSupported();
-    el.sendLabel.textContent = "Send to ClioPlay";
-    el.sendSubtext.textContent = "Tap to try again";
     setBtStatus("ready", "Ready");
     renderTrip();
+    updateSendDock();
     setMessage(`Could not start Bluetooth media transfer: ${error?.message || error}`, "error");
   }
 }
@@ -1114,9 +1134,9 @@ async function transmitTrip() {
   completedTripIndices.clear();
   clearTimeout(sentTimer);
   stopSendLoops();
-  el.sendTripButton.classList.remove("sent");
-  el.sendTripButton.classList.add("sending");
-  el.tripProgressFill.style.width = "0%";
+  el.sendButton.classList.remove("sent");
+  el.sendButton.classList.add("sending");
+  el.sendProgressFill.style.width = "0%";
   el.cancelTripButton.hidden = false;
   vibrate(12);
 
@@ -1127,10 +1147,9 @@ async function transmitTrip() {
   el.txAudio.volume = 1;
 
   el.sendButton.disabled = true;
-  el.sendTripButton.disabled = true;
-  el.tripSendIcon.innerHTML = ICONS.wave;
-  el.tripSendLabel.textContent = `Sending 1 of ${schedule.length}…`;
-  el.tripSendSubtext.textContent = `Destination: ${schedule[0].stop.name} · ${totalSeconds}s`;
+  el.sendIcon.innerHTML = ICONS.wave;
+  el.sendLabel.textContent = `Sending 1 of ${schedule.length}…`;
+  el.sendSubtext.textContent = `Destination: ${schedule[0].stop.name} · ${totalSeconds}s`;
   setBtStatus("sending", `1/${schedule.length}`);
   renderTrip();
 
@@ -1149,12 +1168,12 @@ async function transmitTrip() {
     stopSendLoops();
     clearMediaSession();
     el.cancelTripButton.hidden = true;
-    el.sendTripButton.classList.remove("sending");
-    el.tripProgressFill.style.width = "0%";
-    el.tripSendIcon.innerHTML = ICONS.send;
+    el.sendButton.classList.remove("sending");
+    el.sendProgressFill.style.width = "0%";
+    el.sendIcon.innerHTML = ICONS.send;
     setBtStatus("ready", "Ready");
     renderTrip();
-    updateDestination(currentProvider);
+    updateSendDock();
     setMessage(`Could not start Bluetooth trip transfer: ${error?.message || error}`, "error");
   }
 }
@@ -1273,10 +1292,10 @@ el.clearTripButton.addEventListener("click", () => {
   tripStops = canStorePlaces ? clearTrip(localStorage) : [];
   completedTripIndices.clear();
   renderTrip();
+  if (!currentCoords() && !el.destinationInput.value.trim()) setMessage(idleComposerPrompt());
   showToast("Trip cleared");
 });
 
-el.sendTripButton.addEventListener("click", transmitTrip);
 el.cancelTripButton.addEventListener("click", cancelTripTransfer);
 
 el.savePlaceButton.addEventListener("click", () => {
@@ -1304,7 +1323,10 @@ el.clearRecentsButton.addEventListener("click", () => {
   showToast("Recent sends cleared");
 });
 
-el.sendButton.addEventListener("click", transmit);
+el.sendButton.addEventListener("click", () => {
+  if (tripStops.length > 0) transmitTrip();
+  else transmit();
+});
 el.routeNewButton.addEventListener("click", () => setSendAction("N"));
 el.addStopButton.addEventListener("click", () => setSendAction("S"));
 
@@ -1416,5 +1438,6 @@ loadPreferences();
 setSendAction("N");
 renderPlaces();
 renderTrip();
+if (!currentCoords() && !el.destinationInput.value.trim()) setMessage(idleComposerPrompt());
 updateInstallUi();
 consumeShareTarget();

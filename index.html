@@ -14,7 +14,7 @@
   <link rel="apple-touch-icon" href="./icons/apple-touch-icon.png?v=20261126-2">
   <link rel="icon" type="image/svg+xml" href="./icons/icon.svg?v=20261126-2">
   <link rel="icon" type="image/png" sizes="192x192" href="./icons/icon-192.png?v=20261126-2">
-  <link rel="stylesheet" href="./styles.css?v=20261126-5">
+  <link rel="stylesheet" href="./styles.css?v=20261126-6">
   <title>ClioPlay Send</title>
 </head>
 <body>
@@ -80,7 +80,7 @@
       <!-- VIEW 1: SEND -->
       <section id="viewSend" class="app-view" role="tabpanel" aria-labelledby="navSend">
         <div class="view-header">
-          <h1 id="sendHeading" tabindex="-1">Send Destination</h1>
+          <h1 id="sendHeading" tabindex="-1">Destination</h1>
           <div class="view-header-actions">
             <button id="locateButton" class="chip-button" type="button" title="Use your phone's current GPS location">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -189,27 +189,9 @@
             <button id="clearTripButton" class="chip-button chip-danger" type="button">Clear</button>
           </div>
           <ol id="tripList" class="trip-list"></ol>
-          <div class="trip-send-wrap">
-            <button id="sendTripButton" class="send-button send-button-trip" type="button" disabled>
-              <span class="send-icon" id="tripSendIcon" aria-hidden="true">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M22 2 11 13M22 2l-7 20-4-9-9-4 20-7Z"/>
-                </svg>
-              </span>
-              <span class="send-copy">
-                <strong id="tripSendLabel">Send Trip to ClioPlay</strong>
-                <small id="tripSendSubtext">Add stops to build a trip</small>
-              </span>
-              <span id="tripDurationBadge" class="send-duration-badge">0s</span>
-              <span class="send-progress" aria-hidden="true">
-                <span id="tripProgressFill" class="send-progress-fill"></span>
-              </span>
-            </button>
-            <button id="cancelTripButton" class="cancel-trip-button" type="button" hidden>Cancel trip transfer</button>
-          </div>
         </section>
 
-        <section class="action-section" aria-labelledby="actionLabel">
+        <section id="actionSection" class="action-section" aria-labelledby="actionLabel">
           <span id="actionLabel" class="section-eyebrow">Route action</span>
           <div class="action-switch" role="group" aria-label="Destination action">
             <button id="routeNewButton" class="action-option selected" type="button" aria-pressed="true">
@@ -253,6 +235,7 @@
               <span id="sendProgressFill" class="send-progress-fill"></span>
             </span>
           </button>
+          <button id="cancelTripButton" class="cancel-trip-button" type="button" hidden>Cancel trip transfer</button>
           <p class="music-note">Bluetooth media pauses briefly while transmitting and may need resuming afterwards.</p>
         </div>
       </section>
@@ -440,7 +423,7 @@
   </div>
 
   <audio id="txAudio" preload="auto" playsinline></audio>
-  <script type="module" src="./app.js?v=20261126-5"></script>
+  <script type="module" src="./app.js?v=20261126-6"></script>
   <script type="module" src="./release-notice.js?v=20261123"></script>
 </body>
 </html>
