@@ -9,35 +9,41 @@ media metadata.</p>
 ## Use
 
 1. Connect your phone to CLIOPLAY Bluetooth and open this app.
-2. Paste Google Maps, Apple Maps, Waze or OpenStreetMap destination links,
-   or enter latitude and longitude. Check the detected destination.
-3. Choose **Route as new** or **Add as stop**, then **Send to ClioPlay**.
+2. In the **Send** tab, paste Google Maps, Apple Maps, Waze or OpenStreetMap
+   destination links, or tap **Coords** to enter latitude and longitude (decimal
+   or DMS). Check the detected destination card.
+3. Choose **Route as new** or **Add as stop**, then tap **Send to ClioPlay**.
 
-OpenStreetMap short links work directly, including offline. For Apple Maps and
-Google Maps short links, choose **Expand short link** when the site has a resolver
-configured. That action sends the short URL to the resolver, which requests its
-redirect from the map provider. You can also choose **Open map link** and paste the
-expanded address-bar URL or the destination coordinates. Always check the preview
-before sending, especially if a link contains only a map centre.
+OpenStreetMap (`osm.org/go/…`), Waze geohash (`waze.com/ul/h…`), Firebase
+dynamic Google links (`maps.app.goo.gl/?link=…`), and wrapped consent links
+decode locally, including offline. For shortened Google Maps (`maps.app.goo.gl`,
+`goo.gl/maps`, `share.google`, `g.page`, `?cid=` / `?ftid=`), Apple Maps
+(`maps.apple/p/…`), and non-geohash Waze (`waze.com/ul/…`) links, ClioPlay Send
+expands them automatically when a resolver is configured (this can be switched
+to manual confirmation in **Settings → Auto-expand short links**). Expansion
+strips tracking parameters and sends only the allowlisted short URL to the
+resolver to read its redirect; you can also choose **Open map link** and paste
+the expanded address-bar URL or coordinates. Always check the preview before
+sending, especially if a link shows **Map centre**.
 
-The Bluetooth media window defaults to **4 seconds**. Transfer options allow
-1, 2, 3, 4, 5 or 8 seconds and remember your selection when browser storage is
-available. With ClioPlay v2.2.3's AVRCP notifications, shorter send windows
-(1–2 seconds) usually transfer immediately while 4 seconds remains the safe
-default for all phones. Destination names preserve native UTF-8 scripts (up to
-40 characters / 160 UTF-8 bytes) without ASCII transliteration. Music pauses
-during transmission and may need to be resumed.
-The phone's success message reports completion of the send window; the protocol
-has no head-unit acknowledgement. Check the destination on the head unit.
+The Bluetooth media window defaults to **4 seconds** and can be adjusted to
+1, 2, 3, 4, 5 or 8 seconds in the **Settings** tab (remembered when browser
+storage is available). With ClioPlay v2.2.3's AVRCP notifications, shorter send
+windows (1–2 seconds) usually transfer immediately while 4 seconds remains the
+safe default for all phones. Destination names preserve native UTF-8 scripts
+(up to 40 characters / 160 UTF-8 bytes) without ASCII transliteration. Music
+pauses during transmission and may need to be resumed. The phone's success
+message reports completion of the send window; the protocol has no head-unit
+acknowledgement. Check the destination on the head unit.
 
 ### Saved places and recent sends
 
 When browser storage is available, ClioPlay Send keeps an on-device list of
-**Saved places** and **Recent sends** (no server or account is used). Tap
-**Save** on any detected destination to bookmark it (tapping **Saved** removes
-it), or tap any saved or recent entry to load its name, coordinates and action
-ready to send again. If browser storage is blocked, these sections stay hidden
-automatically.
+**Saved** places and **Recent** sends in the **Places** tab (plus one-tap
+**Quick places** chips on the **Send** screen — no server or account is used).
+Tap **Save** on any detected destination (or the bookmark icon on a recent send)
+to store it, or tap any entry to load its name, coordinates and action directly
+into **Send**.
 
 ## Host
 
@@ -63,17 +69,20 @@ transfer reliability; duration is adjustable for this reason.
 
 GitHub Pages serves static files. Map providers’ redirects need to be read by a
 separately hosted service because browsers do not expose those headers to the app.
-The Cloudflare Worker in `resolver/` handles only the supported Apple Maps and
-Google Maps short-link formats. It returns the expanded URL, and ClioPlay Send
-reads its coordinates locally. No geocoding keys are required.
+The Cloudflare Worker in `resolver/` handles only allowlisted Google Maps
+(`maps.app.goo.gl`, `goo.gl/maps`, `share.google`, `g.page`, `?cid=` / `?ftid=`),
+Apple Maps (`maps.apple/p/…`), and Waze (`waze.com/ul/…`) short-link formats.
+It strips tracking parameters, handles regional Google ccTLDs, unwraps EU/UK
+`consent.google.*` and `google.*/url` bounces, follows multi-hop same-provider
+redirects safely (never touching third-party hosts), and returns the expanded
+URL so ClioPlay Send parses coordinates locally. No geocoding keys are required.
 
 Deploy the Worker from this folder with `npx wrangler deploy --config resolver/wrangler.toml`.
-Set `SEND_ORIGIN` in the Worker configuration to your Send site's origin. Put the
-deployed HTTPS URL in the `map-link-resolver` meta tag in `index.html` before
-publishing the Pages site. The meta tag is empty by default, so the site offers
-**Open map link** until a resolver is configured. Keep Worker request logging
-disabled as specified in the configuration. Map providers still receive the link
-needed to perform the lookup.
+Set `SEND_ORIGIN` in the Worker configuration to your Send site's origin (or a
+comma-separated list of allowed origins). Put the deployed HTTPS URL in the
+`map-link-resolver` meta tag in `index.html` before publishing the Pages site.
+Keep Worker request logging disabled as specified in the configuration. Map
+providers still receive the link needed to perform the lookup.
 
 ## ClioPlay release announcements
 

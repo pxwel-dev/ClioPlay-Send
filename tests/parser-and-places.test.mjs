@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { sanitiseAvrcpName, buildPacket } from "../parser.js";
+import { parseDestination, sanitiseAvrcpName, buildPacket } from "../parser.js";
 import {
   RECENT_KEY, SAVED_KEY, RECENT_MAX, SAVED_MAX,
   storageAvailable, loadPlaces, recordRecent, clearRecents,
@@ -15,6 +15,51 @@ function memoryStorage() {
     removeItem: k => { map.delete(k); },
   };
 }
+
+test("parser handles DMS, cardinal coords, titled coords, geo RFC 5870, OSM directions, and Google !2d!3d", () => {
+  const dms = parseDestination(`51°30'26.6"N 0°07'39.9"W`);
+  assert.equal(dms.ok, true);
+  assert.ok(Math.abs(dms.lat - 51.507389) < 0.0001 && Math.abs(dms.lon - -0.12775) < 0.0001);
+
+  const cardinal = parseDestination("51.5074° N, 0.1278° W");
+  assert.equal(cardinal.ok, true);
+  assert.ok(Math.abs(cardinal.lat - 51.5074) < 0.0001 && Math.abs(cardinal.lon - -0.1278) < 0.0001);
+
+  const titled = parseDestination("Office\n54.9783, -1.6178");
+  assert.equal(titled.ok, true);
+  assert.equal(titled.name, "Office");
+  assert.equal(titled.lat, 54.9783);
+
+  const geo = parseDestination("geo:51.5074,-0.1278;crs=wgs84;u=35?z=16&q=51.5074,-0.1278(Big+Ben)");
+  assert.equal(geo.ok, true);
+  assert.equal(geo.name, "Big Ben");
+
+  const osmDir = parseDestination("https://www.openstreetmap.org/directions?engine=fossgis_osrm_car&route=51.51,-0.13;51.5074,-0.1278");
+  assert.equal(osmDir.ok, true);
+  assert.equal(osmDir.provider, "OpenStreetMap");
+  assert.equal(osmDir.lat, 51.5074);
+  assert.equal(osmDir.lon, -0.1278);
+
+  const altGoogle = parseDestination("https://www.google.co.uk/maps/place/Kareem's+Grill/data=!4m2!3m1!1s0x0!2d-1.60208!3d54.97032");
+  assert.equal(altGoogle.ok, true);
+  assert.equal(altGoogle.name, "Kareem's Grill");
+  assert.equal(altGoogle.lat, 54.97032);
+  assert.equal(altGoogle.lon, -1.60208);
+
+  const ambiguous = parseDestination("https://www.google.com/maps/dir/A/B/data=!3d51.5!4d-0.1!3d52.0!4d-1.0");
+  assert.equal(ambiguous.ok, false);
+  assert.match(ambiguous.error, /more than one location/i);
+
+  const consentLocal = parseDestination("https://consent.google.com/m?continue=https%3A%2F%2Fwww.google.de%2Fmaps%2Fplace%2FBrandenburger%2BTor%2F%4052.516275%2C13.377704%2C17z%2Fdata%3D!3d52.5162746!4d13.3777041");
+  assert.equal(consentLocal.ok, true);
+  assert.equal(consentLocal.name, "Brandenburger Tor");
+  assert.equal(consentLocal.lat, 52.5162746);
+
+  const appleQ = parseDestination("https://maps.apple/?q=51.5074,-0.1278&address=Westminster");
+  assert.equal(appleQ.ok, true);
+  assert.equal(appleQ.provider, "Apple Maps");
+  assert.equal(appleQ.name, "Westminster");
+});
 
 test("sanitiseAvrcpName preserves international UTF-8 scripts and enforces 40-char / 160-byte bounds", () => {
   assert.equal(sanitiseAvrcpName("Café de Flore"), "Café de Flore");

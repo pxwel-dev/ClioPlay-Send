@@ -1,5 +1,21 @@
 # Sender changes
 
+## 26 November 2026 — Companion app redesign & bulletproof short-link resolver
+
+- **Companion app UX (`index.html`, `styles.css`, `app.js`, `manifest.webmanifest`):**
+  - Re-implemented ClioPlay Send as a frosted-glass companion PWA with a sticky top status bar (`Ready` / `Sending` / `Sent`), fixed bottom tab bar (**Send**, **Places**, **Settings**), safe-area insets, vector icons, and micro-toast feedback.
+  - Added one-tap **Quick places** chips on **Send**, a live **40-char AVRCP counter** and pin-confidence badge (`Exact pin` / `Map centre`) on the destination card, and a tactile **Send to ClioPlay** button with an embedded live progress bar and countdown during transmission.
+  - Added automatic short-link expansion on paste/share (with an **Auto-expand short links** toggle in **Settings**, plus `1s–8s` pill duration picker and standalone/iOS install guidance).
+  - Dedicated **Places** tab with 1-tap reload into **Send**, quick-bookmarking on recent sends, and live tab badge counts.
+- **Broadened, hardened short-link resolver & parser (`short-links.js`, `resolver/worker.mjs`, `parser.js`):**
+  - Expanded Google Maps support to cover `maps.app.goo.gl`, `goo.gl/maps`, `share.google`, `g.page` (including `/r/` and `?share`), `?cid=` / `?ftid=` redirects, Firebase dynamic `maps.app.goo.gl/?link=…` (offline), and **all official regional Google ccTLDs** (`google.pl`, `google.es`, `google.it`, `google.co.jp`, etc. — no longer capped at 6 countries).
+  - Unwrap EU/UK `consent.google.*` (`continue=`) and `google.*/url` (`q=`/`url=`) redirect bounces safely both in the Worker and locally offline, while rejecting off-provider redirect targets.
+  - Follow multi-hop same-provider redirects (up to 6 hops, including `ftid`/`cid` hops when an intermediate Google Maps URL has no coordinates yet, with graceful fallback).
+  - Added **Waze** offline Base32 geohash decoding (`waze.com/ul/h…`), Waze short-link redirect support (`waze.com/ul/…`), and Live Map destination-name parsing.
+  - Added iOS 18+ Apple Maps apex domain (`maps.apple/…`) and `beta.maps.apple.com` support.
+  - Added `OPTIONS` CORS preflight support, `http://` → `https://` upgrades for allowlisted shorteners, multi-origin `SEND_ORIGIN` allowlists, DMS & cardinal coordinate parsing, OpenStreetMap `/directions?route=…`, Google `!2d!3d` & `/maps/search/lat,lon`, RFC 5870 `geo:` URIs, and scheme-less map links.
+  - Bumped PWA asset query versions (`?v=20261126`) and service worker cache (`clioplay-send-20261126-1`).
+
 ## 26 November 2026 — ClioPlay 2.2.7 announcement
 
 - Update the release announcement notice (`release.json`) to **ClioPlay v2.2.7** covering the camera system overhaul (matching upcoming-camera map markers, flush 43 px frosted-glass camera card with capsule progress bar and synced red overspeed rim, speed-scaled detection and average-speed fixes, and two-tier `Overspeed audio`).
