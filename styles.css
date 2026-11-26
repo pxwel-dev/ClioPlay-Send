@@ -107,16 +107,18 @@ button {
   flex: 0 0 34px;
   display: grid;
   place-items: center;
+  overflow: hidden;
+  border: 0;
   border-radius: 10px;
-  background: linear-gradient(180deg, #4cb8ff 0%, #1686f8 55%, #0052e0 100%);
-  border: 1px solid rgba(255, 255, 255, 0.22);
-  box-shadow: 0 4px 14px rgba(0, 108, 240, 0.34), inset 0 1px 0 rgba(255, 255, 255, 0.35);
+  background: linear-gradient(180deg, #4cb8ff 0%, #1686f8 54%, #0052e0 100%) no-repeat;
+  box-shadow: 0 4px 12px rgba(0, 108, 240, 0.32), inset 0 0 0 1px rgba(255, 255, 255, 0.14);
 }
 
 .brand-mark svg {
-  width: 28px;
-  height: 28px;
-  filter: drop-shadow(0 1px 2px rgba(0, 28, 96, 0.35));
+  display: block;
+  width: 30px;
+  height: 30px;
+  filter: drop-shadow(0 1px 2px rgba(0, 28, 96, 0.32));
 }
 
 .brand-text span, .brand-text strong {
@@ -538,6 +540,7 @@ textarea:focus, input:focus {
   margin-top: 12px;
   border-color: rgba(88, 214, 238, 0.28);
   background: linear-gradient(180deg, rgba(20, 32, 44, 0.94), rgba(14, 21, 30, 0.95));
+  background-origin: border-box;
   animation: view-in 0.16s ease-out;
 }
 
@@ -748,6 +751,7 @@ textarea:focus, input:focus {
 .action-option.selected {
   border-color: var(--cyan-line);
   background: linear-gradient(145deg, rgba(88, 214, 238, 0.13), rgba(88, 214, 238, 0.05));
+  background-origin: border-box;
   box-shadow: inset 0 1px 0 rgba(88, 214, 238, 0.15);
 }
 
@@ -1270,6 +1274,7 @@ textarea:focus, input:focus {
   border: 1px solid rgba(88, 214, 238, 0.34);
   border-radius: var(--radius-lg);
   background: linear-gradient(145deg, rgba(19, 36, 48, 0.94), rgba(14, 24, 34, 0.95));
+  background-origin: border-box;
   box-shadow: 0 10px 26px rgba(0, 0, 0, 0.22);
 }
 
