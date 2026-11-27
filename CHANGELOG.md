@@ -1,5 +1,10 @@
 # Sender changes
 
+## 27 November 2026 — ClioPlay 2.2.8 announcement
+
+- Update the release announcement notice (`release.json`) to **ClioPlay v2.2.8** covering the `Z0–Z9` cartographic road rendering overhaul (continuous wide carriageways, 3D perspective tapering, Day/Night kerb casings, priority outward parallel-road expansion, smooth S-curve wide-to-minor road transitions), world-anchored road label stability with competition hysteresis, `Q4` close-zoom junction tracking/stop-settling, and early ignition-off shutdown reliability.
+- Bump service worker precache (`clioplay-send-20261127-1`) so installed web apps refresh the announcement cache cleanly.
+
 ## 26 November 2026 — Multi-stop trip builder, My Location / Where I Parked & iPhone Share Sheet
 
 - **Multi-stop Trip Builder (`trip-store.js`, `app.js`, `index.html`, `styles.css`):**

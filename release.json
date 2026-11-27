@@ -1,12 +1,12 @@
 {
-  "version": "2.2.7",
-  "title": "Camera system overhaul",
+  "version": "2.2.8",
+  "title": "Cartographic road overhaul & stability",
   "features": [
-    "Matching upcoming-camera map markers: crisp supersampled icons for Speed, Red-light and Average-speed cameras appear on the map for the upcoming camera (or average-zone exit) and turn red when over the limit.",
-    "Sleek flush 43 px camera card: aligned with the Speed and Turn pills, with matching icons, clean limit readouts, a BT-CTRL-style capsule progress bar and a synced pulsing red overspeed rim.",
-    "Smarter detection & reliability: speed-scaled warning and chime horizons, curved-road unguided matching, high-speed 1 Hz average-speed entry, along-route zone distance with slip-road auto-clear, and exact overspeed parity.",
-    "Two-tier chimes & Overspeed audio: distinct approach vs overspeed Bluetooth audio cues, plus a new Overspeed audio mode (quiet when compliant on speed/average cameras; soft cue only for red-light cameras)."
+    "Redesigned roads across Z0–Z9: proportional wide antialiased carriageways, true 3D perspective tapering, zero-blob Day & Night kerb casings, elevated motorway flyovers and scaled cased route overlays.",
+    "Smart non-overlapping roads & smooth transitions: main roads expand first while adjacent minor lanes shift outwards to stay distinct, and wide roads glide into minor roads via smooth S-curve width and colour tapers.",
+    "Rock-solid road names while driving: street labels lock to fixed world positions on the road with competition hysteresis and re-entry debounce so names glide smoothly with the tarmac instead of flickering or jumping.",
+    "Junction tracking & early ignition-off fixes: sub-unit Q4 close-zoom tracking with post-stop settling converges cleanly at stop lines, plus cooperative shutdown prevents freezes on quick ignition-off right after boot."
   ],
-  "releaseUrl": "https://github.com/pxwel-dev/ClioPlay/releases/tag/v2.2.7",
+  "releaseUrl": "https://github.com/pxwel-dev/ClioPlay/releases/tag/v2.2.8",
   "updateUrl": "https://github.com/pxwel-dev/ClioPlay/blob/main/src/docs/updating.md"
 }
