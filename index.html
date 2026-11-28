@@ -1,21 +1,21 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" dir="ltr">
 <head>
   <meta name="map-link-resolver" content="https://clioplay-send-resolver.pxwel-dev.workers.dev">
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-  <meta name="theme-color" content="#070b10">
-  <meta name="color-scheme" content="dark">
-  <meta name="description" content="Companion app to send map destinations from your phone to ClioPlay over Bluetooth.">
+  <meta name="theme-color" content="#041214" id="themeColorMeta">
+  <meta name="color-scheme" content="dark light">
+  <meta name="description" content="ClioPlay Link companion app for instant Bluetooth navigation, multi-stop itineraries, car settings & driving insights.">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="ClioPlay Send">
-  <link rel="manifest" href="./manifest.webmanifest?v=20261126-2">
-  <link rel="apple-touch-icon" href="./icons/apple-touch-icon.png?v=20261126-2">
-  <link rel="icon" type="image/svg+xml" href="./icons/icon.svg?v=20261126-2">
-  <link rel="icon" type="image/png" sizes="192x192" href="./icons/icon-192.png?v=20261126-2">
-  <link rel="stylesheet" href="./styles.css?v=20261126-7">
-  <title>ClioPlay Send</title>
+  <meta name="apple-mobile-web-app-title" content="ClioPlay Link">
+  <link rel="manifest" href="./manifest.webmanifest?v=3.0.0">
+  <link rel="apple-touch-icon" href="./icons/apple-touch-icon.png?v=3.0.0">
+  <link rel="icon" type="image/svg+xml" href="./icons/icon.svg?v=3.0.0">
+  <link rel="icon" type="image/png" sizes="192x192" href="./icons/icon-192.png?v=3.0.0">
+  <link rel="stylesheet" href="./styles.css?v=3.0.0">
+  <title>ClioPlay Link</title>
 </head>
 <body>
   <div class="app-frame">
@@ -32,7 +32,7 @@
           </div>
           <div class="brand-text">
             <span>CLIOPLAY</span>
-            <strong>Send</strong>
+            <strong>Link</strong>
           </div>
         </div>
         <div class="app-bar-actions">
@@ -40,17 +40,18 @@
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
               <path d="M12 3v12m-4-4 4 4 4-4M5 19h14"/>
             </svg>
-            <span>Install</span>
+            <span data-i18n="install">Install</span>
           </button>
-          <span id="btStatusPill" class="status-pill ready" aria-live="polite">
+          <button id="btStatusPill" class="status-pill ready" type="button" aria-live="polite">
             <span class="status-dot" aria-hidden="true"></span>
-            <span id="btStatusText">Ready</span>
-          </span>
+            <span id="btStatusText" data-i18n="status_ready">Ready</span>
+          </button>
         </div>
       </div>
     </header>
 
     <main class="app-content">
+      <!-- Smart Release Notice (only auto-shown if release.json > synced car version) -->
       <section id="releaseNotice" class="release-notice" aria-label="ClioPlay release announcement" hidden>
         <div class="release-row">
           <button id="releaseToggle" class="release-toggle" type="button" aria-expanded="false" aria-controls="releaseDetails">
@@ -63,13 +64,13 @@
             </span>
             <svg class="release-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
           </button>
-          <button id="releaseDismiss" class="release-dismiss" type="button" aria-label="Dismiss this release announcement" title="Dismiss this release announcement">
+          <button id="releaseDismiss" class="release-dismiss" type="button" aria-label="Dismiss">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg>
           </button>
         </div>
         <div id="releaseDetails" class="release-details" hidden>
           <ul id="releaseFeatures"></ul>
-          <p class="release-note">Already installed? Keep your compatible maps, settings and saved places.</p>
+          <p class="release-note">Keep your existing maps, settings, saved places and driving history.</p>
           <div class="release-links">
             <a id="releaseLink" class="release-primary" target="_blank" rel="noopener noreferrer">View release ↗</a>
             <a id="releaseGuide" target="_blank" rel="noopener noreferrer">How to update ↗</a>
@@ -77,68 +78,88 @@
         </div>
       </section>
 
-      <!-- VIEW 1: SEND -->
-      <section id="viewSend" class="app-view" role="tabpanel" aria-labelledby="navSend">
+      <!-- TAB 1: NAVIGATE -->
+      <section id="viewNavigate" class="app-view" role="tabpanel" aria-labelledby="navNavigate">
         <div class="view-header">
-          <h1 id="sendHeading" tabindex="-1">Destination</h1>
+          <h1 id="sendHeading" tabindex="-1" data-i18n="nav_heading">Destination</h1>
           <div class="view-header-actions">
-            <button id="locateButton" class="chip-button" type="button" title="Use your phone's current GPS location">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                <circle cx="12" cy="12" r="3"/><path d="M12 2v3m0 14v3M2 12h3m14 0h3"/>
-              </svg>
-              <span>Locate</span>
-            </button>
-            <button id="manualCoordsToggle" class="chip-button" type="button" aria-expanded="false" aria-controls="manualCoordsPanel">
-              <span>Coords</span>
-            </button>
-            <button id="clearInputButton" class="chip-button chip-danger" type="button" hidden>Clear</button>
+            <button id="manualCoordsToggle" class="chip-button" type="button" aria-expanded="false" aria-controls="manualCoordsPanel" data-i18n="btn_coords">Coords</button>
+            <button id="clearInputButton" class="chip-button chip-danger" type="button" hidden data-i18n="btn_clear">Clear</button>
           </div>
         </div>
 
-        <section class="surface composer-card" aria-label="Map link input">
-          <div class="composer-bar">
-            <label for="destinationInput" class="composer-label">Map link or coordinates</label>
-            <button id="pasteButton" class="paste-pill" type="button">
+        <!-- Unified Omnibox: Search places + Paste map links + Coords -->
+        <section class="surface omnibox-card" aria-label="Search or paste destination">
+          <div class="omnibox-row">
+            <svg class="omnibox-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/>
+            </svg>
+            <input id="destinationInput" class="omnibox-input" type="search" autocomplete="off" spellcheck="false"
+              data-i18n-placeholder="omnibox_placeholder" placeholder="Search place, paste map link, or enter coords">
+            <button id="pasteButton" class="omnibox-inline-btn" type="button" data-i18n-aria="btn_paste" data-i18n-title="btn_paste" title="Paste">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                 <rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/>
               </svg>
-              <span>Paste</span>
+            </button>
+            <button id="locateButton" class="omnibox-inline-btn" type="button" data-i18n-aria="btn_locate" data-i18n-title="btn_locate" title="Locate">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <circle cx="12" cy="12" r="3"/><path d="M12 2v3m0 14v3M2 12h3m14 0h3"/>
+              </svg>
             </button>
           </div>
-          <textarea id="destinationInput" rows="2" spellcheck="false" autocomplete="off" placeholder="Paste Google, Apple, CoMaps, Waze, OSM link or 51.5074, -0.1278"></textarea>
+
+          <ul id="searchResults" class="search-results" role="listbox" hidden></ul>
 
           <div class="status-row">
             <span id="expandSpinner" class="spinner" aria-hidden="true" hidden></span>
-            <div id="parseMessage" class="message" role="status">Paste a map link or coordinates to begin.</div>
+            <div id="parseMessage" class="message" role="status" data-i18n="prompt_idle">Search a place, paste any map link, or tap a saved spot.</div>
+          </div>
+
+          <div id="outOfMapBanner" class="out-of-map-banner" hidden>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M12 9v4m0 4h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/>
+            </svg>
+            <span data-i18n="out_of_map_warn">Outside your car's installed map pack.</span>
           </div>
 
           <div id="shortLinkActions" class="short-actions" hidden>
-            <button id="expandLink" class="pill-action pill-action-primary" type="button" title="Send this short URL to the ClioPlay Send resolver" hidden>Expand short link</button>
-            <a id="openShortLink" class="pill-action" target="_blank" rel="noopener noreferrer">Open map link ↗</a>
+            <button id="expandLink" class="pill-action pill-action-primary" type="button" hidden data-i18n="btn_expand_link">Expand short link</button>
+            <a id="openShortLink" class="pill-action" target="_blank" rel="noopener noreferrer" data-i18n="btn_open_link">Open map link ↗</a>
           </div>
 
           <div id="manualCoordsPanel" class="manual-panel" hidden>
             <div class="coordinate-grid">
               <label>
-                <span>Latitude</span>
-                <input id="latInput" inputmode="decimal" autocomplete="off" placeholder="51.507400">
+                <span data-i18n="label_latitude">Latitude</span>
+                <input id="latInput" inputmode="decimal" autocomplete="off" placeholder="54.978300">
               </label>
               <label>
-                <span>Longitude</span>
-                <input id="lonInput" inputmode="decimal" autocomplete="off" placeholder="-0.127800">
+                <span data-i18n="label_longitude">Longitude</span>
+                <input id="lonInput" inputmode="decimal" autocomplete="off" placeholder="-1.617800">
               </label>
             </div>
           </div>
         </section>
 
+        <!-- Quick Places Chips -->
         <section id="quickPlacesStrip" class="quick-strip" aria-label="Quick places" hidden>
-          <div class="quick-strip-header">
-            <span>Quick places</span>
-            <button id="quickPlacesAll" class="inline-link" type="button">All places →</button>
-          </div>
           <div id="quickPlacesList" class="quick-chips"></div>
         </section>
 
+        <!-- Interactive Canvas Mini-Map -->
+        <section id="miniMapCard" class="surface map-card" hidden>
+          <canvas id="miniMapCanvas" class="mini-map-canvas"></canvas>
+          <div class="map-overlay-bar">
+            <span class="map-hint-pill" data-i18n="map_drag_hint">Drag pin or tap map to adjust</span>
+            <button id="mapFitButton" class="map-fit-btn" type="button" aria-label="Fit map">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/>
+              </svg>
+            </button>
+          </div>
+        </section>
+
+        <!-- Active Destination Card -->
         <section id="destinationCard" class="surface destination-card" aria-label="Detected destination" hidden>
           <div class="destination-header">
             <div class="pin-badge" aria-hidden="true">
@@ -154,71 +175,75 @@
               <strong id="previewName">Phone destination</strong>
               <span id="previewCoords" class="coords"></span>
             </div>
-            <button id="savePlaceButton" class="bookmark-button" type="button" aria-label="Save place" hidden>
+            <button id="savePlaceButton" class="bookmark-button" type="button" hidden>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                 <path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16Z"/>
               </svg>
-              <span id="savePlaceLabel">Save</span>
+              <span id="savePlaceLabel" data-i18n="btn_save">Save</span>
             </button>
           </div>
 
           <label class="name-field" for="nameInput">
             <span class="name-field-head">
-              <span>Car display name</span>
+              <span data-i18n="label_car_name">Car display name</span>
               <span id="nameCounter" class="char-counter">0 / 40</span>
             </span>
             <input id="nameInput" maxlength="80" autocomplete="off" placeholder="Phone destination">
           </label>
 
           <div class="dest-card-footer">
-            <button id="addToTripButton" class="pill-action dest-trip-btn" type="button">
+            <button id="addToTripButton" class="pill-action pill-action-primary dest-trip-btn" type="button">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                 <path d="M12 5v14M5 12h14"/>
               </svg>
-              <span id="addToTripLabel">Add to multi-stop trip</span>
+              <span id="addToTripLabel" data-i18n="btn_start_trip">Start multi-stop trip</span>
             </button>
           </div>
         </section>
 
+        <!-- Carminat Live Vertical Itinerary Progress Rail -->
         <section id="tripCard" class="surface trip-card" aria-labelledby="tripHeading" hidden>
           <div class="trip-header">
             <div class="trip-title-wrap">
-              <h2 id="tripHeading">Trip Queue</h2>
+              <h2 id="tripHeading" data-i18n="trip_heading">Itinerary</h2>
               <span id="tripCountPill" class="value-pill">0 / 10</span>
             </div>
-            <button id="clearTripButton" class="chip-button chip-danger" type="button">Clear</button>
+            <div class="trip-header-actions">
+              <button id="optimiseTripButton" class="chip-button" type="button" hidden data-i18n="trip_optimise">Optimise</button>
+              <button id="savePresetButton" class="chip-button" type="button" data-i18n="trip_save_preset">Save preset</button>
+              <button id="clearTripButton" class="chip-button chip-danger" type="button" data-i18n="btn_clear">Clear</button>
+            </div>
           </div>
-          <ol id="tripList" class="trip-list"></ol>
+          <ol id="tripList" class="trip-rail-list"></ol>
         </section>
 
-        <section id="actionSection" class="action-section" aria-labelledby="actionLabel">
-          <span id="actionLabel" class="section-eyebrow">Route action</span>
-          <div class="action-switch" role="group" aria-label="Destination action">
-            <button id="routeNewButton" class="action-option selected" type="button" aria-pressed="true">
-              <span class="action-icon" aria-hidden="true">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M12 3 4.5 20l7.5-3.6L19.5 20 12 3Z"/>
-                </svg>
-              </span>
-              <span class="action-copy">
-                <strong>Route as new</strong>
-                <small>Replace active route</small>
-              </span>
-            </button>
-            <button id="addStopButton" class="action-option" type="button" aria-pressed="false">
-              <span class="action-icon" aria-hidden="true">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/>
-                </svg>
-              </span>
-              <span class="action-copy">
-                <strong>Add as stop</strong>
-                <small>Stop along the way</small>
-              </span>
-            </button>
-          </div>
+        <!-- Route / Stop Switch (single-destination mode only) -->
+        <section id="actionSection" class="action-switch" role="group" aria-label="Route action">
+          <button id="routeNewButton" class="action-option selected" type="button" aria-pressed="true">
+            <span class="action-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 3 4.5 20l7.5-3.6L19.5 20 12 3Z"/>
+              </svg>
+            </span>
+            <span class="action-copy">
+              <strong data-i18n="action_route_new">Route as new</strong>
+              <small data-i18n="action_route_new_sub">Replace active route</small>
+            </span>
+          </button>
+          <button id="addStopButton" class="action-option" type="button" aria-pressed="false">
+            <span class="action-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/>
+              </svg>
+            </span>
+            <span class="action-copy">
+              <strong data-i18n="action_add_stop">Add as stop</strong>
+              <small data-i18n="action_add_stop_sub">Stop along the way</small>
+            </span>
+          </button>
         </section>
 
+        <!-- Smart Send Dock + Remote Car Controls -->
         <div class="send-dock">
           <button id="sendButton" class="send-button" type="button" disabled>
             <span class="send-icon" id="sendIcon" aria-hidden="true">
@@ -227,26 +252,44 @@
               </svg>
             </span>
             <span class="send-copy">
-              <strong id="sendLabel">Send to ClioPlay</strong>
-              <small id="sendSubtext">Choose a destination first</small>
+              <strong id="sendLabel" data-i18n="send_to_car">Send to ClioPlay</strong>
+              <small id="sendSubtext" data-i18n="send_choose_first">Choose a destination first</small>
             </span>
-            <span id="sendDurationBadge" class="send-duration-badge">4s</span>
+            <span id="sendDurationBadge" class="send-duration-badge">CLP3</span>
             <span class="send-progress" aria-hidden="true">
               <span id="sendProgressFill" class="send-progress-fill"></span>
             </span>
           </button>
-          <button id="cancelTripButton" class="cancel-trip-button" type="button" hidden>Cancel trip transfer</button>
-          <p class="music-note">Bluetooth media pauses briefly while transmitting and may need resuming afterwards.</p>
+
+          <button id="cancelTripButton" class="pill-action pill-action-danger" type="button" hidden data-i18n="cancel_transfer">Cancel transfer</button>
+
+          <div id="remoteStrip" class="remote-strip" hidden>
+            <button id="remoteCancelRouteBtn" class="pill-action pill-action-danger" type="button" data-i18n="remote_cancel_route">Cancel car route</button>
+            <button id="remoteSkipStopBtn" class="pill-action" type="button" data-i18n="remote_skip_stop">Skip next stop</button>
+          </div>
         </div>
       </section>
 
-      <!-- VIEW 2: PLACES -->
+      <!-- TAB 2: PLACES -->
       <section id="viewPlaces" class="app-view" role="tabpanel" aria-labelledby="navPlaces" hidden>
         <div class="view-header">
-          <h2>Places</h2>
-          <button id="clearRecentsButton" class="chip-button chip-danger" type="button" hidden>Clear recent</button>
+          <h2 data-i18n="places_heading">Places</h2>
+          <button id="clearRecentsButton" class="chip-button chip-danger" type="button" hidden data-i18n="btn_clear">Clear</button>
         </div>
 
+        <!-- Symmetrical Sync Bar -->
+        <div class="sync-bar">
+          <button id="syncPlacesToCarBtn" class="pill-action pill-action-primary" type="button">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 19V5m-6 6 6-6 6 6"/></svg>
+            <span id="syncPlacesToCarLabel" data-i18n="btn_sync_to_car_clean">Sync to Car</span>
+          </button>
+          <button id="syncPlacesFromCarBtn" class="pill-action" type="button">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14m6-6-6 6-6-6"/></svg>
+            <span data-i18n="btn_sync_from_car">Sync from Car</span>
+          </button>
+        </div>
+
+        <!-- Where I Parked -->
         <section id="parkedCard" class="surface parked-card" aria-label="Where I parked">
           <div class="parked-top">
             <div class="parked-icon" aria-hidden="true">
@@ -255,175 +298,342 @@
               </svg>
             </div>
             <div class="parked-copy">
-              <strong id="parkedTitle">Where I Parked</strong>
-              <small id="parkedMeta">Save your current GPS location when you park.</small>
+              <strong id="parkedTitle" data-i18n="parked_title">Where I Parked</strong>
+              <small id="parkedMeta" data-i18n="parked_empty">Save your phone's GPS spot when you park.</small>
             </div>
           </div>
           <div class="parked-actions">
-            <button id="parkHereButton" class="pill-action pill-action-primary" type="button">Park here</button>
-            <button id="loadParkedButton" class="pill-action" type="button" hidden>Load</button>
-            <button id="addParkedToTripButton" class="pill-action" type="button" hidden>+ Trip</button>
-            <button id="clearParkedButton" class="pill-action pill-action-danger" type="button" hidden>Clear</button>
+            <button id="parkHereButton" class="pill-action pill-action-primary" type="button" data-i18n="btn_park_here">Park here</button>
+            <a id="walkBackLink" class="pill-action" target="_blank" rel="noopener noreferrer" hidden data-i18n="btn_walk_back">Walk back</a>
+            <button id="loadParkedButton" class="pill-action" type="button" hidden data-i18n="btn_load">Route</button>
+            <button id="clearParkedButton" class="pill-action pill-action-danger" type="button" hidden data-i18n="btn_clear">Clear</button>
           </div>
         </section>
 
-        <div id="placesCard" class="places-view-body">
-          <div class="segmented-bar" role="tablist" aria-label="Places filter">
-            <button id="savedTabButton" class="segmented-tab selected" type="button" role="tab" aria-selected="true">Saved</button>
-            <button id="recentTabButton" class="segmented-tab" type="button" role="tab" aria-selected="false">Recent</button>
-          </div>
+        <!-- Pinned Home & Work Cards -->
+        <div class="pinned-grid">
+          <button id="pinnedHomeBtn" class="pinned-card" type="button">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="m3 10 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z"/><path d="M9 22V12h6v10"/>
+            </svg>
+            <span class="pinned-card-copy">
+              <strong data-i18n="pin_home">Home</strong>
+              <small id="pinnedHomeSub" data-i18n="pin_set_hint">Tap to assign from Saved</small>
+            </span>
+          </button>
+          <button id="pinnedWorkBtn" class="pinned-card" type="button">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/>
+            </svg>
+            <span class="pinned-card-copy">
+              <strong data-i18n="pin_work">Work</strong>
+              <small id="pinnedWorkSub" data-i18n="pin_set_hint">Tap to assign from Saved</small>
+            </span>
+          </button>
+        </div>
 
-          <ul id="placesList" class="places-list"></ul>
+        <!-- Saved / Presets / Recent -->
+        <div class="segmented-bar" role="tablist" aria-label="Places list">
+          <button id="savedTabButton" class="segmented-tab selected" type="button" role="tab" aria-selected="true" data-i18n="subtab_saved">Saved</button>
+          <button id="presetsTabButton" class="segmented-tab" type="button" role="tab" aria-selected="false" data-i18n="subtab_presets">Presets</button>
+          <button id="recentTabButton" class="segmented-tab" type="button" role="tab" aria-selected="false" data-i18n="subtab_recent">Recent</button>
+        </div>
 
-          <div id="placesEmpty" class="empty-state" hidden>
-            <div class="empty-icon" aria-hidden="true">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
-                <path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16Z"/>
-              </svg>
-            </div>
-            <strong id="placesEmptyTitle">No saved places yet</strong>
-            <p id="placesEmptyText">Tap Save on any destination to keep it on your phone for one-tap sending.</p>
-          </div>
+        <ul id="placesList" class="places-list"></ul>
+        <div id="placesEmpty" class="empty-state" hidden>
+          <strong id="placesEmptyTitle"></strong>
+          <p id="placesEmptyText"></p>
         </div>
       </section>
 
-      <!-- VIEW 3: SETTINGS -->
-      <section id="viewSettings" class="app-view" role="tabpanel" aria-labelledby="navSettings" hidden>
+      <!-- TAB 3: CAR (Renault-model-neutral: Clio, Megane, Scenic, Laguna, Kangoo, Trafic) -->
+      <section id="viewCar" class="app-view" role="tabpanel" aria-labelledby="navCar" hidden>
         <div class="view-header">
-          <h2>Settings</h2>
+          <h2 data-i18n="car_heading">Car</h2>
+          <button id="carSyncFromBtn" class="chip-button active" type="button">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14m6-6-6 6-6-6"/></svg>
+            <span data-i18n="btn_sync_from_car">Sync from Car</span>
+          </button>
         </div>
 
-        <section class="surface settings-group" aria-labelledby="settingsTransferTitle">
-          <div class="settings-head">
-            <h3 id="settingsTransferTitle">Bluetooth transfer window</h3>
-            <span id="durationValuePill" class="value-pill">4s</span>
-          </div>
-          <div id="durationPills" class="duration-grid" role="radiogroup" aria-label="Send duration">
-            <button type="button" class="duration-pill" role="radio" aria-checked="false" data-duration="1">1s</button>
-            <button type="button" class="duration-pill" role="radio" aria-checked="false" data-duration="2">2s</button>
-            <button type="button" class="duration-pill" role="radio" aria-checked="false" data-duration="3">3s</button>
-            <button type="button" class="duration-pill selected" role="radio" aria-checked="true" data-duration="4">4s</button>
-            <button type="button" class="duration-pill" role="radio" aria-checked="false" data-duration="5">5s</button>
-            <button type="button" class="duration-pill" role="radio" aria-checked="false" data-duration="8">8s</button>
-          </div>
-          <p class="settings-note">With ClioPlay v2.2.3+ instant Bluetooth updates, 1–2s is usually enough. Increase this if your head unit takes longer to switch to Bluetooth audio.</p>
-        </section>
-
-        <section class="surface settings-group" aria-labelledby="settingsResolverTitle">
-          <div class="settings-row">
-            <div class="settings-row-copy">
-              <h3 id="settingsResolverTitle">Auto-expand short links</h3>
-              <p class="settings-note">Automatically resolve shortened map URLs when pasted or shared. Tracking parameters are stripped first.</p>
+        <!-- Head-Unit Hero Card -->
+        <section class="surface car-hero">
+          <div class="car-hero-top">
+            <div class="car-hero-meta">
+              <strong id="carHeroTitle" data-i18n="car_hero_title">ClioPlay Head Unit</strong>
+              <small id="carHeroSubtitle" data-i18n="car_not_synced">Not synced yet — tap Sync from Car or scan QR on your car screen.</small>
             </div>
-            <button id="autoExpandToggle" class="toggle-switch" type="button" role="switch" aria-checked="true" aria-label="Auto-expand short links">
-              <span class="toggle-knob"></span>
-            </button>
+            <span id="carVersionBadge" class="value-pill" hidden></span>
+          </div>
+
+          <div id="carSyncStatusStrip" class="sync-status-strip" hidden>
+            <span id="carSyncStatusText"></span>
+            <button id="carQuickSyncBtn" class="chip-button active" type="button" hidden></button>
+          </div>
+
+          <div class="car-hero-actions">
+            <button id="pingCarBtn" class="pill-action" type="button" data-i18n="btn_ping_car">Test Link</button>
+            <button id="scanConnectQrBtn" class="pill-action" type="button" data-i18n="btn_scan_qr">Scan QR</button>
+            <button id="syncClockBtn" class="pill-action" type="button" data-i18n="btn_sync_clock">Sync Clock</button>
           </div>
         </section>
 
-        <section class="surface settings-group" aria-labelledby="settingsProvidersTitle">
-          <h3 id="settingsProvidersTitle">Supported links &amp; formats</h3>
-          <ul class="provider-list">
-            <li>
-              <strong>Google Maps</strong>
-              <span>Full URLs, <code>maps.app.goo.gl</code>, <code>goo.gl/maps</code>, <code>share.google</code>, <code>g.page</code>, <code>?cid=</code> / <code>?ftid=</code></span>
-            </li>
-            <li>
-              <strong>Apple Maps</strong>
-              <span><code>maps.apple.com</code>, <code>maps.apple</code>, <code>maps.apple/p/…</code></span>
-            </li>
-            <li>
-              <strong>CoMaps</strong>
-              <span><code>comaps.at/…</code> (offline), <code>cm://</code>, <code>ge0://</code>, map &amp; route links</span>
-            </li>
-            <li>
-              <strong>Waze</strong>
-              <span><code>waze.com/ul/h…</code> (offline), <code>waze.com/ul/…</code>, Live Map</span>
-            </li>
-            <li>
-              <strong>OpenStreetMap</strong>
-              <span><code>osm.org/go/…</code> (offline), pins, map views, directions</span>
-            </li>
-            <li>
-              <strong>Coordinates</strong>
-              <span>Decimal, DMS (<code>51°30'N</code>), and <code>geo:</code> URIs</span>
-            </li>
-          </ul>
+        <!-- mobility.h + mobility_ml.h Driving Insights -->
+        <section class="surface insights-card">
+          <div class="section-head">
+            <h3 data-i18n="insights_heading">Driving Insights</h3>
+          </div>
+          <div id="insightsContainer"></div>
         </section>
 
-        <section id="iosShortcutGroup" class="surface settings-group" aria-labelledby="settingsIosTitle">
-          <div class="settings-head">
-            <h3 id="settingsIosTitle">iPhone Share Sheet (Apple Shortcut)</h3>
-            <span class="value-pill">iOS</span>
+        <!-- Full 18-Field Car Settings (prefs.ini 12-byte editor) -->
+        <section class="surface settings-group" aria-labelledby="carSettingsTitle">
+          <div class="section-head">
+            <h3 id="carSettingsTitle" data-i18n="car_settings_heading">Car Settings</h3>
           </div>
-          <p class="settings-note">Share straight from CoMaps, Apple Maps, Google Maps or Waze on iPhone with a 2-action Apple Shortcut:</p>
-          <ol class="shortcut-steps">
-            <li>Open <strong>Shortcuts</strong> → tap <strong>+</strong> → name it <strong>Send to ClioPlay</strong>.</li>
-            <li>Tap <strong>ⓘ</strong> (Details) → enable <strong>Show in Share Sheet</strong> (URLs &amp; Text).</li>
-            <li>Add <strong>URL Encode</strong> (<em>Shortcut Input</em>), then <strong>Open URLs</strong> set to the link below + <em>URL Encoded Text</em>.</li>
-            <li>Optional: append <code>&amp;action=stop</code> or <code>&amp;trip=1</code> for quick stop / trip shortcuts.</li>
-          </ol>
-          <div class="shortcut-url-bar">
-            <code id="shortcutUrlPreview" class="shortcut-url-code"></code>
-            <button id="copyShortcutUrlButton" class="pill-action pill-action-primary" type="button">Copy URL</button>
-          </div>
-        </section>
 
-        <section class="surface settings-group" aria-labelledby="settingsAppTitle">
-          <h3 id="settingsAppTitle">App &amp; ClioPlay head unit</h3>
-          <div id="settingsInstallRow" class="settings-action-row">
-            <div class="settings-row-copy">
-              <strong id="installStatusTitle">Install on home screen</strong>
-              <small id="installStatusText">Add ClioPlay Send to your phone for offline use and Share Sheet support.</small>
+          <div class="setting-row" data-pref-key="bright">
+            <span class="setting-label"><strong data-i18n="pref_bright">Brightness</strong></span>
+            <div class="setting-range-wrap">
+              <input id="prefBright" class="setting-range" type="range" min="10" max="100" step="5" value="80">
+              <span id="prefBrightVal" class="value-pill">80%</span>
             </div>
-            <button id="settingsInstallButton" class="pill-action pill-action-primary" type="button" hidden>Install</button>
-            <span id="installedBadge" class="value-pill value-pill-success" hidden>Installed</span>
           </div>
-          <div class="settings-divider"></div>
-          <div class="settings-action-row">
-            <div class="settings-row-copy">
-              <strong>ClioPlay software</strong>
-              <small>Check latest head-unit release notes and update instructions.</small>
-            </div>
-            <button id="releaseReopen" class="release-reopen" type="button" hidden></button>
+
+          <div class="setting-row" data-pref-key="theme">
+            <span class="setting-label"><strong data-i18n="pref_theme">Car theme</strong></span>
+            <select id="prefTheme" class="setting-select">
+              <option value="2" data-i18n="opt_auto">Auto</option>
+              <option value="0" data-i18n="opt_day">Day</option>
+              <option value="1" data-i18n="opt_night">Night</option>
+            </select>
+          </div>
+
+          <div class="setting-row" data-pref-key="dayStart">
+            <span class="setting-label"><strong data-i18n="pref_day_start">Day starts</strong></span>
+            <input id="prefDayStart" class="setting-time" type="time" value="07:00">
+          </div>
+
+          <div class="setting-row" data-pref-key="nightStart">
+            <span class="setting-label"><strong data-i18n="pref_night_start">Night starts</strong></span>
+            <input id="prefNightStart" class="setting-time" type="time" value="20:00">
+          </div>
+
+          <div class="setting-row" data-pref-key="units">
+            <span class="setting-label"><strong data-i18n="pref_units">Units</strong></span>
+            <select id="prefUnits" class="setting-select">
+              <option value="0" data-i18n="opt_auto">Auto</option>
+              <option value="1" data-i18n="opt_metric">Metric (km)</option>
+              <option value="2" data-i18n="opt_imperial">Imperial (mi)</option>
+            </select>
+          </div>
+
+          <div class="setting-row" data-pref-key="cameras">
+            <span class="setting-label"><strong data-i18n="pref_cameras">Camera alerts</strong></span>
+            <select id="prefCameras" class="setting-select">
+              <option value="0" data-i18n="opt_off">Off</option>
+              <option value="1" data-i18n="opt_on">On</option>
+              <option value="2" data-i18n="opt_silent">Silent</option>
+            </select>
+          </div>
+
+          <div class="setting-row" data-pref-key="navChimes">
+            <span class="setting-label"><strong data-i18n="pref_chimes">Navigation chimes</strong></span>
+            <select id="prefNavChimes" class="setting-select">
+              <option value="0" data-i18n="opt_off">Off</option>
+              <option value="1" data-i18n="opt_link_only">Link only</option>
+              <option value="2" data-i18n="opt_all_cues">All cues</option>
+            </select>
+          </div>
+
+          <div class="setting-row" data-pref-key="language">
+            <span class="setting-label"><strong data-i18n="pref_language">Car language</strong></span>
+            <select id="prefLanguage" class="setting-select"></select>
+          </div>
+
+          <div class="setting-row" data-pref-key="autozoom">
+            <span class="setting-label"><strong data-i18n="pref_autozoom">Auto zoom</strong></span>
+            <button id="prefAutozoom" class="toggle-switch" type="button" role="switch" aria-checked="true"></button>
+          </div>
+
+          <div class="setting-row" data-pref-key="clockAuto">
+            <span class="setting-label"><strong data-i18n="pref_clock_auto">Automatic clock</strong></span>
+            <button id="prefClockAuto" class="toggle-switch" type="button" role="switch" aria-checked="true"></button>
+          </div>
+
+          <div class="setting-row" data-pref-key="gpsHud">
+            <span class="setting-label"><strong data-i18n="pref_gps_hud">GPS HUD panel</strong></span>
+            <button id="prefGpsHud" class="toggle-switch" type="button" role="switch" aria-checked="false"></button>
+          </div>
+
+          <div class="setting-row" data-pref-key="topSwap">
+            <span class="setting-label"><strong data-i18n="pref_top_swap">Swap top pills</strong></span>
+            <button id="prefTopSwap" class="toggle-switch" type="button" role="switch" aria-checked="false"></button>
+          </div>
+
+          <div class="setting-row" data-pref-key="bottomSwap">
+            <span class="setting-label"><strong data-i18n="pref_bottom_swap">Swap bottom pills</strong></span>
+            <button id="prefBottomSwap" class="toggle-switch" type="button" role="switch" aria-checked="false"></button>
+          </div>
+
+          <div class="setting-row" data-pref-key="learnHistory">
+            <span class="setting-label"><strong data-i18n="pref_learn">Learn driving history</strong></span>
+            <button id="prefLearnHistory" class="toggle-switch" type="button" role="switch" aria-checked="true"></button>
+          </div>
+
+          <div class="setting-row" data-pref-key="destPred">
+            <span class="setting-label"><strong data-i18n="pref_dest_pred">Destination suggestions</strong></span>
+            <button id="prefDestPred" class="toggle-switch" type="button" role="switch" aria-checked="true"></button>
+          </div>
+
+          <div class="setting-row" data-pref-key="diversions">
+            <span class="setting-label"><strong data-i18n="pref_diversions">Intelligent diversions</strong></span>
+            <button id="prefDiversions" class="toggle-switch" type="button" role="switch" aria-checked="true"></button>
+          </div>
+
+          <div class="setting-row" data-pref-key="debug">
+            <span class="setting-label"><strong data-i18n="pref_debug">Debug log</strong></span>
+            <button id="prefDebug" class="toggle-switch" type="button" role="switch" aria-checked="false"></button>
+          </div>
+
+          <button id="restoreFullProfileBtn" class="pill-action" type="button" data-i18n="btn_restore_profile">Restore Full Profile to Car</button>
+        </section>
+
+        <!-- Sticky Pending Car Settings Bar -->
+        <div id="stickyApplyBar" class="sticky-apply-bar" hidden>
+          <button id="applyCarPrefsBtn" class="pill-action pill-action-accent" type="button"></button>
+          <button id="resetCarPrefsBtn" class="pill-action" type="button" data-i18n="btn_reset">Reset</button>
+        </div>
+
+        <!-- App Preferences (Theme, 18 Languages, Privacy/Online Toggle) -->
+        <section class="surface settings-group">
+          <div class="section-head">
+            <h3 data-i18n="app_prefs_heading">App Preferences</h3>
+          </div>
+
+          <div class="setting-row">
+            <span class="setting-label"><strong data-i18n="app_theme">App theme</strong></span>
+            <select id="appThemeSelect" class="setting-select">
+              <option value="system" data-i18n="theme_system">System</option>
+              <option value="dark" data-i18n="theme_dark">Dark</option>
+              <option value="light" data-i18n="theme_light">Light</option>
+            </select>
+          </div>
+
+          <div class="setting-row">
+            <span class="setting-label"><strong data-i18n="app_language">App language</strong></span>
+            <select id="appLanguageSelect" class="setting-select"></select>
+          </div>
+
+          <div class="setting-row">
+            <span class="setting-label">
+              <strong data-i18n="online_features">Online map search &amp; tiles</strong>
+              <small data-i18n="online_features_sub">Uses free OpenStreetMap search, tiles &amp; short-link resolver</small>
+            </span>
+            <button id="onlineFeaturesToggle" class="toggle-switch" type="button" role="switch" aria-checked="true"></button>
           </div>
         </section>
 
-        <footer class="app-footer">ClioPlay Send · On-device companion · No accounts or tracking</footer>
+        <!-- 1-File JSON Backup & Restore -->
+        <section class="surface settings-group">
+          <div class="section-head">
+            <h3 data-i18n="backup_heading">Backup &amp; Restore</h3>
+          </div>
+          <div class="sync-bar">
+            <button id="exportBackupBtn" class="pill-action" type="button" data-i18n="btn_export_backup">Export JSON</button>
+            <button id="importBackupBtn" class="pill-action" type="button" data-i18n="btn_import_backup">Import JSON</button>
+            <input id="importBackupInput" type="file" accept="application/json,.json" hidden>
+          </div>
+        </section>
+
+        <!-- OS-Specific Share from Maps -->
+        <section class="surface settings-group">
+          <div class="section-head">
+            <h3 data-i18n="share_setup_heading">Share from Maps</h3>
+          </div>
+          <div id="iosShareCard">
+            <p class="release-note" data-i18n="share_ios_hint">Add an Apple Shortcut with "Receive URLs/Text" → "Open URLs" using this prefix:</p>
+            <div class="shortcut-box">
+              <code id="shortcutUrlPreview">https://pxwel-dev.github.io/ClioPlay-Send/?text=</code>
+              <button id="copyShortcutUrlButton" class="chip-button" type="button" data-i18n="btn_copy">Copy</button>
+            </div>
+          </div>
+          <div id="androidShareCard" hidden>
+            <p class="release-note" data-i18n="share_android_hint">Install ClioPlay Link as an app from Chrome menu to appear directly in your Android Share Sheet.</p>
+          </div>
+        </section>
+
+        <!-- Collapsible ClioPlay v2.2 Compatibility & Release Info -->
+        <section class="surface">
+          <details class="collapsible-details">
+            <summary data-i18n="legacy_heading">ClioPlay v2.2 Compatibility</summary>
+            <div class="collapsible-body">
+              <div class="setting-row">
+                <span class="setting-label"><strong data-i18n="legacy_force">Force v2.2 timed window</strong></span>
+                <button id="forceLegacyToggle" class="toggle-switch" type="button" role="switch" aria-checked="false"></button>
+              </div>
+              <div class="duration-pills" id="durationPills" role="radiogroup" aria-label="Fallback window">
+                <button class="duration-pill" type="button" data-duration="2">2s</button>
+                <button class="duration-pill" type="button" data-duration="3">3s</button>
+                <button class="duration-pill selected" type="button" data-duration="4">4s</button>
+                <button class="duration-pill" type="button" data-duration="5">5s</button>
+                <button class="duration-pill" type="button" data-duration="8">8s</button>
+              </div>
+              <button id="releaseReopen" class="pill-action" type="button" hidden>Latest release</button>
+            </div>
+          </details>
+        </section>
       </section>
     </main>
-
-    <div id="appToast" class="app-toast" role="status" aria-live="polite" hidden></div>
-
-    <nav class="tab-bar" role="tablist" aria-label="Main navigation">
-      <div class="tab-bar-inner">
-        <button id="navSend" class="tab-item selected" type="button" role="tab" aria-selected="true" aria-controls="viewSend" data-tab="send">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <path d="M22 2 11 13M22 2l-7 20-4-9-9-4 20-7Z"/>
-          </svg>
-          <span>Send</span>
-        </button>
-        <button id="navPlaces" class="tab-item" type="button" role="tab" aria-selected="false" aria-controls="viewPlaces" data-tab="places">
-          <span class="tab-icon-wrap">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-              <path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16Z"/>
-            </svg>
-            <span id="placesBadge" class="tab-badge" hidden></span>
-          </span>
-          <span>Places</span>
-        </button>
-        <button id="navSettings" class="tab-item" type="button" role="tab" aria-selected="false" aria-controls="viewSettings" data-tab="settings">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2Z"/><circle cx="12" cy="12" r="3"/>
-          </svg>
-          <span>Settings</span>
-        </button>
-      </div>
-    </nav>
   </div>
 
-  <audio id="txAudio" preload="auto" playsinline></audio>
-  <script type="module" src="./app.js?v=20261126-7"></script>
-  <script type="module" src="./release-notice.js?v=20261123"></script>
+  <!-- Model-Neutral 3-Tab Bottom Navigation: Navigate · Places · Car -->
+  <nav class="bottom-nav" aria-label="Main navigation">
+    <div class="bottom-nav-inner" role="tablist">
+      <button id="navNavigate" class="nav-tab selected" type="button" role="tab" aria-selected="true" aria-controls="viewNavigate">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M12 3 4.5 20l7.5-3.6L19.5 20 12 3Z"/>
+        </svg>
+        <span data-i18n="tab_navigate">Navigate</span>
+      </button>
+      <button id="navPlaces" class="nav-tab" type="button" role="tab" aria-selected="false" aria-controls="viewPlaces">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16Z"/>
+        </svg>
+        <span data-i18n="tab_places">Places</span>
+        <span id="placesBadge" class="nav-badge" hidden></span>
+      </button>
+      <button id="navCar" class="nav-tab" type="button" role="tab" aria-selected="false" aria-controls="viewCar">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M5 17h14M6 17l1.5-6.5A2 2 0 0 1 9.4 9h5.2a2 2 0 0 1 1.9 1.5L18 17M4 17v2a1 1 0 0 0 1 1h2a1 1 0 0 0 1-1v-2m8 0v2a1 1 0 0 0 1 1h2a1 1 0 0 0 1-1v-2"/>
+          <circle cx="7.5" cy="14" r="1"/><circle cx="16.5" cy="14" r="1"/>
+        </svg>
+        <span data-i18n="tab_car">Car</span>
+        <span id="carBadge" class="nav-badge warn" hidden></span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- Fullscreen Optical QR Scanner Modal -->
+  <div id="scannerModal" class="scanner-modal" role="dialog" aria-modal="true" aria-labelledby="scannerTitle" hidden>
+    <div class="scanner-head">
+      <h2 id="scannerTitle" data-i18n="scanner_title">Scan ClioPlay QR</h2>
+      <button id="scannerCloseBtn" class="chip-button" type="button" data-i18n="btn_close">Close</button>
+    </div>
+    <div class="scanner-viewport">
+      <video id="scannerVideo" class="scanner-video" playsinline muted></video>
+      <canvas id="scannerCanvas" hidden></canvas>
+      <div class="scanner-reticle" aria-hidden="true"></div>
+    </div>
+    <div class="scanner-footer">
+      <div id="scannerDots" class="scanner-dots" hidden></div>
+      <div id="scannerStatus"></div>
+    </div>
+  </div>
+
+  <div id="appToast" class="app-toast" role="status" aria-live="polite" hidden></div>
+  <audio id="txAudio" playsinline preload="none"></audio>
+
+  <script type="module" src="./app.js?v=3.0.0"></script>
 </body>
 </html>

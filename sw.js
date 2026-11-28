@@ -1,9 +1,17 @@
-const CACHE = "clioplay-send-20261127-1";
-const OWNED_PREFIX = "clioplay-send-";
+const CACHE = "clioplay-link-3.0.0";
+const OWNED_PREFIXES = ["clioplay-send-", "clioplay-link-"];
+const LOCALES = [
+  "en", "fr", "es", "de", "it", "pt", "nl", "pl", "tr",
+  "el", "uk", "ru", "ar", "zh-Hans", "ja", "ko", "hi", "he"
+];
 const ASSETS = [
-  "./", "./index.html", "./styles.css", "./app.js", "./parser.js", "./places-store.js",
-  "./trip-store.js", "./release-notice.js", "./release.json", "./short-links.js",
-  "./manifest.webmanifest", "./icons/icon.svg", "./icons/icon-192.png", "./icons/icon-512.png", "./icons/apple-touch-icon.png"
+  "./", "./index.html", "./styles.css", "./app.js", "./parser.js", "./short-links.js",
+  "./protocol.js", "./qr-sync.js", "./qr-decode.js", "./qr-scanner.js", "./transport.js",
+  "./mini-map.js", "./trip-rail.js", "./insights.js", "./i18n.js",
+  "./places-store.js", "./trip-store.js", "./release-notice.js", "./release.json",
+  "./manifest.webmanifest", "./icons/icon.svg", "./icons/icon-192.png", "./icons/icon-512.png",
+  "./icons/apple-touch-icon.png",
+  ...LOCALES.map(code => `./locales/${code}.json`)
 ];
 
 self.addEventListener("install", event => {
@@ -13,7 +21,13 @@ self.addEventListener("install", event => {
 });
 
 self.addEventListener("activate", event => {
-  event.waitUntil(caches.keys().then(keys => Promise.all(keys.filter(key => key.startsWith(OWNED_PREFIX) && key !== CACHE).map(key => caches.delete(key)))).then(() => self.clients.claim()));
+  event.waitUntil(
+    caches.keys().then(keys => Promise.all(
+      keys
+        .filter(key => OWNED_PREFIXES.some(p => key.startsWith(p)) && key !== CACHE)
+        .map(key => caches.delete(key))
+    )).then(() => self.clients.claim())
+  );
 });
 
 self.addEventListener("fetch", event => {

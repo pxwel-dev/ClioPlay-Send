@@ -31,7 +31,7 @@ export function validRelease(data) {
     safeUrl(data.releaseUrl, "releases/tag/") && safeUrl(data.updateUrl, "blob/"));
 }
 
-export function initReleaseNotice({ doc = document, fetcher = fetch, storage } = {}) {
+export function initReleaseNotice({ doc = document, fetcher = fetch, storage, getSyncedVersion = null, onReleaseLoaded = null } = {}) {
   const $ = id => doc.getElementById(id);
   const banner = $("releaseNotice"), toggle = $("releaseToggle"), dismiss = $("releaseDismiss");
   const details = $("releaseDetails"), reopen = $("releaseReopen");
@@ -46,7 +46,8 @@ export function initReleaseNotice({ doc = document, fetcher = fetch, storage } =
   function setExpanded(expanded) {
     details.hidden = !expanded;
     toggle.setAttribute("aria-expanded", String(expanded));
-    $("releaseToggleHint").textContent = expanded ? "Hide details" : "See what's new";
+    const hint = $("releaseToggleHint");
+    if (hint) hint.textContent = expanded ? "Hide details" : "See what's new";
   }
 
   toggle.addEventListener("click", () => setExpanded(details.hidden));
@@ -56,7 +57,6 @@ export function initReleaseNotice({ doc = document, fetcher = fetch, storage } =
     try { storage?.setItem(DISMISSED_KEY, dismissed); } catch { /* session-only dismissal */ }
     setExpanded(false);
     banner.hidden = true;
-    // Return keyboard focus to the main content, without opening the phone keyboard.
     $("sendHeading")?.focus({ preventScroll: true });
   });
   reopen.addEventListener("click", () => {
@@ -66,8 +66,6 @@ export function initReleaseNotice({ doc = document, fetcher = fetch, storage } =
     toggle.focus();
   });
 
-  // Independent of the sender: an absent, invalid or unavailable announcement
-  // never prevents destination parsing or Bluetooth transfers.
   return Promise.resolve().then(() => fetcher("./release.json", { cache: "no-store" }))
     .then(response => {
       if (!response.ok) throw new Error("Release metadata unavailable");
@@ -88,10 +86,11 @@ export function initReleaseNotice({ doc = document, fetcher = fetch, storage } =
       reopen.textContent = `Latest release: v${data.version}`;
       reopen.hidden = false;
       setExpanded(false);
-      banner.hidden = compareVersions(data.version, dismissed) <= 0;
+      const syncedVer = typeof getSyncedVersion === "function" ? getSyncedVersion() : "";
+      const alreadyUpToDate = syncedVer && VERSION.test(syncedVer) && compareVersions(data.version, syncedVer) <= 0;
+      banner.hidden = alreadyUpToDate || compareVersions(data.version, dismissed) <= 0;
+      try { onReleaseLoaded?.(data); } catch { }
       return true;
     })
     .catch(() => false);
 }
-
-if (typeof document !== "undefined") initReleaseNotice();

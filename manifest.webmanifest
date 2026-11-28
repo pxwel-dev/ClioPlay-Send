@@ -1,12 +1,12 @@
 {
-  "name": "ClioPlay Send",
+  "name": "ClioPlay Link",
   "short_name": "ClioPlay",
-  "description": "Send destinations from your phone to ClioPlay.",
+  "description": "Companion app for ClioPlay car navigation: instant Bluetooth sync, multi-stop itinerary planner, car settings & driving insights.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
-  "background_color": "#070b10",
-  "theme_color": "#070b10",
+  "background_color": "#041214",
+  "theme_color": "#041214",
   "icons": [
     { "src": "./icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
     { "src": "./icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable" },
