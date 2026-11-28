@@ -185,16 +185,70 @@ export class ClioMiniMap {
     };
   }
 
-  _tileUrl(z, x, y, dark) {
-    const sub = "abcd"[(x + y) & 3];
-    const style = dark ? "dark_all" : "rastertiles/voyager";
-    return `https://${sub}.basemaps.cartocdn.com/${style}/${z}/${x}/${y}@2x.png`;
+  _tileUrl(z, x, y) {
+    return `https://tile.openstreetmap.org/${z}/${x}/${y}.png`;
+  }
+
+  _buildDarkTile(img) {
+    try {
+      const w = img.naturalWidth || TILE_SIZE;
+      const h = img.naturalHeight || TILE_SIZE;
+      const off = document.createElement("canvas");
+      off.width = w;
+      off.height = h;
+      const octx = off.getContext("2d", { willReadFrequently: true });
+      if (!octx) return img;
+      octx.drawImage(img, 0, 0, w, h);
+      const id = octx.getImageData(0, 0, w, h);
+      const d = id.data;
+      for (let i = 0; i < d.length; i += 4) {
+        const r = d[i], g = d[i + 1], b = d[i + 2];
+        const lum = 0.299 * r + 0.587 * g + 0.114 * b;
+        const maxC = r > g ? (r > b ? r : b) : (g > b ? g : b);
+        const minC = r < g ? (r < b ? r : b) : (g < b ? g : b);
+        const sat = maxC - minC;
+        let nr, ng, nb;
+        if (r > 246 && g > 246 && b > 246) {
+          // OSM minor/residential white road fill -> ClioPlay Night road slate
+          nr = 36; ng = 58; nb = 70;
+        } else if (b > r + 16 && lum > 155) {
+          // OSM water -> ClioPlay Carminat Night deep water
+          nr = 9; ng = 35; nb = 54;
+        } else if (g > r + 8 && g > b + 6 && lum > 165) {
+          // OSM parks & woodland -> muted night forest teal
+          nr = 12; ng = 40; nb = 38;
+        } else if (sat < 14 && lum >= 224) {
+          // OSM land backdrop -> ClioPlay Carminat Night land (#0b1b22)
+          nr = 11; ng = 27; nb = 34;
+        } else if (sat < 16 && lum >= 195) {
+          // OSM buildings / minor casings -> subtle elevated slate
+          nr = 21; ng = 39; nb = 48;
+        } else {
+          // Highways, railways & text labels: preserve hue on inverted luminance
+          const inv = 255 - lum;
+          const base = 16 + inv * 0.76;
+          nr = base + (r - lum) * 0.62 - 3;
+          ng = base + (g - lum) * 0.66 + 6;
+          nb = base + (b - lum) * 0.72 + 12;
+        }
+        d[i] = nr < 0 ? 0 : nr > 255 ? 255 : nr;
+        d[i + 1] = ng < 0 ? 0 : ng > 255 ? 255 : ng;
+        d[i + 2] = nb < 0 ? 0 : nb > 255 ? 255 : nb;
+      }
+      octx.putImageData(id, 0, 0);
+      return off;
+    } catch {
+      return img;
+    }
   }
 
   _getTile(z, x, y, dark) {
-    const key = `${dark ? "d" : "l"}:${z}:${x}:${y}`;
+    const key = `${z}:${x}:${y}`;
     const hit = this.tiles.get(key);
-    if (hit) return hit;
+    if (hit) {
+      if (dark && hit.loaded && !hit.darkImg) hit.darkImg = this._buildDarkTile(hit.img);
+      return hit;
+    }
     if (!this.isOnlineAllowed() || (typeof navigator !== "undefined" && navigator.onLine === false)) return null;
     if (this.tiles.size > 96) {
       const oldest = this.tiles.keys().next().value;
@@ -202,10 +256,14 @@ export class ClioMiniMap {
     }
     const img = new Image();
     img.crossOrigin = "anonymous";
-    const entry = { img, loaded: false, failed: false };
-    img.onload = () => { entry.loaded = true; this.scheduleDraw(); };
+    const entry = { img, darkImg: null, loaded: false, failed: false };
+    img.onload = () => {
+      entry.loaded = true;
+      if (this.isDarkTheme()) entry.darkImg = this._buildDarkTile(img);
+      this.scheduleDraw();
+    };
     img.onerror = () => { entry.failed = true; };
-    img.src = this._tileUrl(z, x, y, dark);
+    img.src = this._tileUrl(z, x, y);
     this.tiles.set(key, entry);
     return entry;
   }
@@ -242,16 +300,28 @@ export class ClioMiniMap {
     const y0 = Math.max(0, Math.floor(centerTy - (this.height / 2) / tileScale) - 1);
     const y1 = Math.min(maxT - 1, Math.ceil(centerTy + (this.height / 2) / tileScale) + 1);
 
+    let drewTile = false;
     for (let ty = y0; ty <= y1; ty++) {
       for (let tx = x0; tx <= x1; tx++) {
         const wtx = ((tx % maxT) + maxT) % maxT;
         const t = this._getTile(z, wtx, ty, dark);
         if (t && t.loaded && !t.failed) {
+          const src = dark ? (t.darkImg || t.img) : t.img;
           const dx = this.width / 2 + (tx - centerTx) * tileScale;
           const dy = this.height / 2 + (ty - centerTy) * tileScale;
-          ctx.drawImage(t.img, dx, dy, tileScale + 0.6, tileScale + 0.6);
+          ctx.drawImage(src, dx, dy, tileScale + 0.6, tileScale + 0.6);
+          drewTile = true;
         }
       }
+    }
+    if (drewTile) {
+      ctx.save();
+      ctx.font = "600 9px -apple-system, BlinkMacSystemFont, sans-serif";
+      ctx.textAlign = "right";
+      ctx.textBaseline = "top";
+      ctx.fillStyle = dark ? "rgba(240, 247, 250, 0.45)" : "rgba(16, 40, 49, 0.48)";
+      ctx.fillText("© OpenStreetMap", this.width - 8, 6);
+      ctx.restore();
     }
 
     // 3. Optional synced Car Map Coverage boundary

@@ -4,6 +4,10 @@
   Created and maintained by <a href="https://github.com/pxwel-dev">Pawel (pxwel-dev)</a>.
 </p>
 
+<p align="center">
+  <img src="./demo/clioplay-link-tour.gif" alt="ClioPlay Link v3.0 interactive tour — Navigate mini-map and live itinerary rail, instant CLP3 send, Places sync, Driving Insights, Car Settings, Carminat Day theme, and Arabic RTL" width="320">
+</p>
+
 ## Highlights in v3.0
 
 - **Three clean tabs (`Navigate · Places · Car`):**

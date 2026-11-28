@@ -1739,6 +1739,7 @@ async function init() {
     renderPlaces();
     renderCarTab();
     updateDestinationCard();
+    updateSendDock();
   });
 
   $("onlineFeaturesToggle").addEventListener("click", () => {
@@ -1829,6 +1830,7 @@ async function init() {
   renderPlaces();
   renderCarTab();
   updateDestinationCard();
+  syncMiniMap(true);
   handleIncomingUrlParams();
   startGpsWatch();
 }
