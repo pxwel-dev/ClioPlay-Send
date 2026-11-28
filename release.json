@@ -1,12 +1,12 @@
 {
-  "version": "2.2.8",
-  "title": "Cartographic road overhaul & stability",
+  "version": "3.0.0",
+  "title": "ClioPlay 3.0 & ClioPlay Link Ecosystem",
   "features": [
-    "Redesigned roads across Z0–Z9: proportional wide antialiased carriageways, true 3D perspective tapering, zero-blob Day & Night kerb casings, elevated motorway flyovers and scaled cased route overlays.",
-    "Smart non-overlapping roads & smooth transitions: main roads expand first while adjacent minor lanes shift outwards to stay distinct, and wide roads glide into minor roads via smooth S-curve width and colour tapers.",
-    "Rock-solid road names while driving: street labels lock to fixed world positions on the road with competition hysteresis and re-entry debounce so names glide smoothly with the tarmac instead of flickering or jumping.",
-    "Junction tracking & early ignition-off fixes: sub-unit Q4 close-zoom tracking with post-stop settling converges cleanly at stop lines, plus cooperative shutdown prevents freezes on quick ignition-off right after boot."
+    "Instant bidirectional CLP3 Bluetooth link with ~0.3 s delivery confirmation, smart music resume and warm link/turn/arrival chimes.",
+    "All-legs multi-stop CH routing with dimmed lavender future legs, Z7-Z9 on-road turn chevrons and Next + Total journey ETAs.",
+    "Zero-menu optical QR sync: floating frosted-glass map QR pill for 2-way favourites, active trip, car settings and driving insights sync.",
+    "Redesigned ClioPlay Link companion app matching ClioPlay's Day/Night glass UI, live GPS itinerary rail, interactive mini-map and 18 languages."
   ],
-  "releaseUrl": "https://github.com/pxwel-dev/ClioPlay/releases/tag/v2.2.8",
-  "updateUrl": "https://github.com/pxwel-dev/ClioPlay/blob/main/src/docs/updating.md"
+  "releaseUrl": "https://github.com/pxwel-dev/ClioPlay/releases/tag/v3.0.0",
+  "updateUrl": "https://github.com/pxwel-dev/ClioPlay/blob/main/README.md#updating-an-existing-install"
 }

@@ -1,4 +1,26 @@
-# Sender changes
+# ClioPlay Link changes
+
+## 28 November 2026 — ClioPlay Link v3.0.0 Ecosystem Redesign
+
+- **Rebrand & Exact Carminat Glass UI (`index.html`, `styles.css`, `manifest.webmanifest`, `app.js`):**
+  - Rebranded from ClioPlay Send to **ClioPlay Link** while preserving the existing GitHub Pages URL (`https://pxwel-dev.github.io/ClioPlay-Send/`) and all existing iOS Shortcuts & bookmarks.
+  - Exact ClioPlay `clio040.c` RGB565 Day & Night palettes, frosted-glass surfaces (`hud_glass.h` 1 px specular top rim), `System / Dark / Light` theme selector, and model-neutral 3-tab bottom bar (**Navigate · Places · Car**).
+- **Bidirectional `CLP3` Bluetooth Transport (`protocol.js`, `transport.js`):**
+  - Instant AVRCP `nexttrack` (`ACK`) / `previoustrack` (`NACK`) delivery confirmation (~0.3 s/packet) with automatic fallback to ClioPlay v2.2 timed windows.
+  - Supports atomic multi-stop trips (`CLP3:T`), 2-way favourites sync (`CLP3:F`), full 18-field `prefs.ini` 12-byte car settings (`CLP3:P`), remote Cancel Route / Skip Stop / Clock & TZ sync (`CLP3:C`), live Link Ping (`CLP3:H`), and optical QR sync stepping (`CLP3:Q`).
+- **Zero-Menu Optical QR Sync (`qr-sync.js`, `qr-scanner.js`, `qr-decode.js`):**
+  - Tap **Sync from Car** to open ClioPlay's floating frosted-glass map QR pill (`CLP3:Q:S`) and stream favourites, active trip, recents, car settings, map coverage bbox, and `mobility.h` / `mobility_ml.h` Driving Insights via closed-loop BT-ACK frames (`CS1:...`).
+  - Bundled zero-dependency offline pure-JS ISO/IEC 18004 QR decoder (`qr-decode.js`) as automatic fallback on iOS Safari alongside native `BarcodeDetector` on Android Chrome.
+  - Deep-link `#q=C1...` Connect QR handling from ClioPlay's `Pair new phone` and connected phone cards.
+- **Interactive Mini-Map, Live GPS Itinerary Rail & Driving Insights (`mini-map.js`, `trip-rail.js`, `insights.js`):**
+  - Zero-dependency 60 fps Canvas Mini-Map with pinch/pan, drag-to-nudge pin, ClioPlay route/car colours, pre-drive out-of-map check, and offline vector grid fallback.
+  - Unified Omnibox combining free OSM Photon/Nominatim place search (gated by Online Features toggle), local Saved/Recent/Parked matches, and full offline map-link/coordinate parsing.
+  - Live foreground-only phone GPS vertical progress rail mirroring ClioPlay's `P_TRIP` view, plus offline 2-opt multi-stop order optimiser and Trip Presets.
+  - Rich `mobility.h` + `mobility_ml.h` Driving Insights visualiser (odometer grid, 7-day & 24h rhythm charts, learned road-class & cold-weather pace, intelligence badges, tappable top places / slowdown hotspots / recent drives).
+  - Pending-Sync delta tracking (`Phone only` dots, sticky `Apply N changes to Car` bar), 1-tap Restore Full Profile to Car, and 1-file JSON Backup & Restore.
+- **Full 18-Language & RTL Parity (`i18n.js`, `locales/*.json`):**
+  - Exact same 18 languages as ClioPlay (`en, fr, es, de, it, pt, nl, pl, tr, el, uk, ru, ar, zh-Hans, ja, ko, hi, he`) with full CSS logical RTL (`dir="rtl"`) for Arabic and Hebrew, OS auto-detection, and automated completeness tests.
+- Updated `release.json` to **v3.0.0** and bumped `sw.js` precache (`clioplay-link-3.0.0`) with all new modules and 18 locale files.
 
 ## 27 November 2026 — ClioPlay 2.2.8 announcement
 

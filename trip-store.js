@@ -1,4 +1,5 @@
-import { validCoords, sanitiseAvrcpName, buildPacket } from "./parser.js?v=20261126-5";
+import { validCoords, sanitiseAvrcpName, buildPacket } from "./parser.js";
+import { buildClp3TripStop } from "./protocol.js";
 
 export const TRIP_KEY = "clp-trip-queue";
 export const PARKED_KEY = "clp-parked-spot";
@@ -11,7 +12,14 @@ function normaliseStop(entry) {
   if (!validCoords(lat, lon)) return null;
   const rawName = typeof entry.name === "string" ? entry.name.trim() : "";
   const name = rawName ? sanitiseAvrcpName(rawName) : "Phone destination";
-  return { name, lat: Number(lat.toFixed(6)), lon: Number(lon.toFixed(6)) };
+  const out = { name, lat: Number(lat.toFixed(6)), lon: Number(lon.toFixed(6)) };
+  if (Number.isFinite(Number(entry.legDistM)) && Number(entry.legDistM) > 0) {
+    out.legDistM = Math.round(Number(entry.legDistM));
+  }
+  if (Number.isFinite(Number(entry.legDurS)) && Number(entry.legDurS) > 0) {
+    out.legDurS = Math.round(Number(entry.legDurS));
+  }
+  return out;
 }
 
 function writeJson(storage, key, value) {
@@ -83,11 +91,9 @@ export function clearTrip(storage) {
 }
 
 /**
- * Build the exact CLP2 transmission sequence matching ClioPlay clio040.c:
+ * Legacy CLP2 transmission sequence (backwards compatible with ClioPlay v2.2.x):
  * - First transmit the final destination with action "N" (replaces active route).
- * - Then transmit stops 0 .. length-2 in forward order with action "S"
- *   (trip_add_stop inserts each stop at index count-1, right before the final
- *   destination, yielding exact itinerary order [stop0, stop1, ..., final]).
+ * - Then transmit stops 0 .. length-2 in forward order with action "S".
  */
 export function buildTripPackets(stops, nextSeqFn) {
   if (!Array.isArray(stops) || stops.length === 0) return [];
@@ -113,6 +119,24 @@ export function buildTripPackets(stops, nextSeqFn) {
     });
   }
   return schedule;
+}
+
+/**
+ * CLP3 atomic multi-stop trip staging packets (ClioPlay v3.0):
+ * Stops are sent in natural order 0..total-1 with shared batchId; ClioPlay stages
+ * them atomically and commits + routes in a single burst once all arrive.
+ */
+export function buildClp3TripPackets(stops, nextSeqFn, batchId = 1) {
+  if (!Array.isArray(stops) || stops.length === 0) return [];
+  const valid = stops.map(normaliseStop).filter(Boolean).slice(0, TRIP_MAX);
+  if (!valid.length) return [];
+  const total = valid.length;
+  return valid.map((stop, idx) => ({
+    stopIndex: idx,
+    stop,
+    action: "T",
+    packet: buildClp3TripStop(idx, total, batchId, stop.lat, stop.lon, stop.name, nextSeqFn())
+  }));
 }
 
 export function loadParkedSpot(storage) {
