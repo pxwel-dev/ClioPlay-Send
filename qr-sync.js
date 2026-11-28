@@ -22,7 +22,7 @@ export function b64UrlEncode(bytes) {
 
 /**
  * Parse Connect QR URL emitted by ClioPlay P_PAIR & P_PHONE_ACTIONS:
- *   https://pxwel-dev.github.io/ClioPlay-Send/#q=C1.<maj>.<min>.<pat>.<iso>.<units><imp>.<la0>.<la1>.<lo0>.<lo1>
+ *   https://pxwel-dev.github.io/ClioPlay-Link/#q=C1.<maj>.<min>.<pat>.<iso>.<units><imp>.<la0>.<la1>.<lo0>.<lo1>
  * Also accepts raw hash `#q=C1...` or payload `C1...`.
  */
 export function parseConnectQrUrl(input) {

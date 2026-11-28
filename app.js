@@ -1397,7 +1397,7 @@ function setupOsShareCards() {
   $("androidShareCard").hidden = isIos;
   const base = location.protocol === "https:" && !/^(localhost|127\.0\.0\.1)$/i.test(location.hostname)
     ? `${location.origin}${location.pathname}?text=`
-    : "https://pxwel-dev.github.io/ClioPlay-Send/?text=";
+    : "https://pxwel-dev.github.io/ClioPlay-Link/?text=";
   $("shortcutUrlPreview").textContent = base;
 }
 

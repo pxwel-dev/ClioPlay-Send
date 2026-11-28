@@ -32,4 +32,4 @@ Run the full automated Node test suite:
 node --test tests/*.test.mjs
 ```
 
-All asset paths are relative and precached by `sw.js` for 100% offline-first operation on GitHub Pages (`https://pxwel-dev.github.io/ClioPlay-Send/`).
+All asset paths are relative and precached by `sw.js` for 100% offline-first operation on GitHub Pages (`https://pxwel-dev.github.io/ClioPlay-Link/`).

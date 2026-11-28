@@ -91,7 +91,7 @@ test("12-byte car prefs packer matches ClioPlay clio_prefs_pack()/unpack() bit-f
 });
 
 test("Connect QR parser, CS1 stacked assembler, binary decoder & out-of-map bbox work end-to-end", () => {
-  const conn = parseConnectQrUrl("https://pxwel-dev.github.io/ClioPlay-Send/#q=C1.3.0.0.GB.21.5000.5880.-620.180");
+  const conn = parseConnectQrUrl("https://pxwel-dev.github.io/ClioPlay-Link/#q=C1.3.0.0.GB.21.5000.5880.-620.180");
   assert.deepEqual(conn, {
     kind: "connect",
     version: "3.0.0",

@@ -4,7 +4,7 @@ import { readFile } from "node:fs/promises";
 import vm from "node:vm";
 
 const source = await readFile(new URL("../sw.js", import.meta.url), "utf8");
-const scope = "https://example.test/ClioPlay-Send/";
+const scope = "https://example.test/ClioPlay-Link/";
 const cached = new Map();
 const handlers = {};
 let network;

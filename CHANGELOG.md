@@ -3,7 +3,7 @@
 ## 28 November 2026 — ClioPlay Link v3.0.0 Ecosystem Redesign
 
 - **Rebrand & Exact Carminat Glass UI (`index.html`, `styles.css`, `manifest.webmanifest`, `app.js`):**
-  - Rebranded from ClioPlay Send to **ClioPlay Link** while preserving the existing GitHub Pages URL (`https://pxwel-dev.github.io/ClioPlay-Send/`) and all existing iOS Shortcuts & bookmarks.
+  - Rebranded from ClioPlay Send to **ClioPlay Link** (`https://pxwel-dev.github.io/ClioPlay-Link/`) with relative asset/PWA paths so both GitHub Pages hosting and local testing work identically.
   - Exact ClioPlay `clio040.c` RGB565 Day & Night palettes, frosted-glass surfaces (`hud_glass.h` 1 px specular top rim), `System / Dark / Light` theme selector, and model-neutral 3-tab bottom bar (**Navigate · Places · Car**).
 - **Bidirectional `CLP3` Bluetooth Transport (`protocol.js`, `transport.js`):**
   - Instant AVRCP `nexttrack` (`ACK`) / `previoustrack` (`NACK`) delivery confirmation (~0.3 s/packet) with automatic fallback to ClioPlay v2.2 timed windows.
